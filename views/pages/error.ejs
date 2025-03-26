@@ -1,0 +1,20 @@
+<!-- views/pages/error.ejs -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow">
+          <div class="card-body text-center">
+            <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
+            <h1 class="h3 mb-3">Error</h1>
+            <p class="mb-4"><%= message %></p>
+            <% if (typeof error === 'object' && Object.keys(error).length > 0) { %>
+              <div class="alert alert-secondary text-start">
+                <pre class="mb-0"><%= JSON.stringify(error, null, 2) %></pre>
+              </div>
+            <% } %>
+            <a href="/" class="btn btn-primary">Go Home</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

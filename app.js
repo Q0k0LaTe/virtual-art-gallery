@@ -1,7 +1,6 @@
 // app.js - Main application file
 const dotenv = require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
@@ -10,27 +9,13 @@ const passport = require('passport');
 const flash = require('connect-flash');
 const morgan = require('morgan');
 const methodOverride = require('method-override');
+const connectDB = require('./config/db');
 
-// Import routes
-const indexRoutes = require('./routes/indexRoutes');
-const userRoutes = require('./routes/userRoutes');
-const artworkRoutes = require('./routes/artworkRoutes');
-const exhibitionRoutes = require('./routes/exhibitionRoutes');
-const purchaseRoutes = require('./routes/purchaseRoutes');
+// Connect to MongoDB
+connectDB();
 
 // Initialize app
 const app = express();
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => {
-    console.error(`Error connecting to MongoDB: ${err.message}`);
-    process.exit(1);
-  });
 
 // Passport configuration
 require('./config/passport')(passport);
@@ -82,12 +67,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.use('/', indexRoutes);
-app.use('/users', userRoutes);
-app.use('/artworks', artworkRoutes);
-app.use('/exhibitions', exhibitionRoutes);
-app.use('/purchases', purchaseRoutes);
+// TEMPORARY ROUTES FOR INITIAL SETUP
+app.get('/', (req, res) => {
+  res.render('pages/home', {
+    title: 'Home'
+  });
+});
 
 // 404 error handler
 app.use((req, res, next) => {
