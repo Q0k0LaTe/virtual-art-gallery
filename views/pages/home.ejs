@@ -15,42 +15,39 @@
   <div class="container">
     <div class="row">
       <div class="col-md-4">
-        <div class="weather-widget">
-          <h3 class="text-primary">Today's Art Mood</h3>
-          <div class="d-flex align-items-center mb-3">
-            <% if (weatherData.weather[0].icon) { %>
-              <img src="https://openweathermap.org/img/wn/<%= weatherData.weather[0].icon %>@2x.png" alt="Weather" class="weather-icon">
-            <% } else { %>
-              <div class="placeholder-icon bg-light rounded me-2" style="width: 50px; height: 50px;"></div>
-            <% } %>
-            <div>
-              <h4><%= weatherData.name %></h4>
-              <p class="mb-0"><%= Math.round(weatherData.main.temp) %>°C, <%= weatherData.weather[0].description %></p>
+        <div class="weather-widget card shadow-sm">
+          <div class="card-body">
+            <h3 class="text-primary">Today's Art Mood</h3>
+            <div class="d-flex align-items-center mb-3">
+              <div>
+                <h4><%= weatherData.name %></h4>
+                <p class="mb-0"><%= Math.round(weatherData.main.temp) %>°C, <%= weatherData.weather[0].description %></p>
+              </div>
             </div>
+            <p>Weather can influence how we perceive art. Today's conditions might enhance your experience with:</p>
+            <ul>
+              <% const weather = weatherData.weather[0].main; %>
+              <% if (weather === 'Clear' || weather === 'Sunny') { %>
+                <li>Bright, colorful paintings</li>
+                <li>Outdoor scenes and landscapes</li>
+              <% } else if (weather === 'Clouds' || weather === 'Partly cloudy' || weather === 'Overcast') { %>
+                <li>Abstract and atmospheric works</li>
+                <li>Impressionist paintings</li>
+              <% } else if (weather === 'Rain' || weather === 'Drizzle') { %>
+                <li>Moody, reflective pieces</li>
+                <li>Water-themed artworks</li>
+              <% } else if (weather === 'Snow' || weather === 'Sleet') { %>
+                <li>Winter landscapes</li>
+                <li>Minimalist artworks</li>
+              <% } else if (weather === 'Thunderstorm') { %>
+                <li>Dramatic and emotional pieces</li>
+                <li>High-contrast works</li>
+              <% } else { %>
+                <li>Contemporary artworks</li>
+                <li>Photography exhibitions</li>
+              <% } %>
+            </ul>
           </div>
-          <p>Weather can influence how we perceive art. Today's conditions might enhance your experience with:</p>
-          <ul>
-            <% const weather = weatherData.weather[0].main; %>
-            <% if (weather === 'Clear' || weather === 'Sunny') { %>
-              <li>Bright, colorful paintings</li>
-              <li>Outdoor scenes and landscapes</li>
-            <% } else if (weather === 'Clouds' || weather === 'Partly cloudy' || weather === 'Overcast') { %>
-              <li>Abstract and atmospheric works</li>
-              <li>Impressionist paintings</li>
-            <% } else if (weather === 'Rain' || weather === 'Drizzle') { %>
-              <li>Moody, reflective pieces</li>
-              <li>Water-themed artworks</li>
-            <% } else if (weather === 'Snow' || weather === 'Sleet') { %>
-              <li>Winter landscapes</li>
-              <li>Minimalist artworks</li>
-            <% } else if (weather === 'Thunderstorm') { %>
-              <li>Dramatic and emotional pieces</li>
-              <li>High-contrast works</li>
-            <% } else { %>
-              <li>Contemporary artworks</li>
-              <li>Photography exhibitions</li>
-            <% } %>
-          </ul>
         </div>
       </div>
       
@@ -105,7 +102,13 @@
         <% }); %>
       <% } else { %>
         <div class="col-12 text-center">
-          <p>No featured artworks available at the moment.</p>
+          <div class="alert alert-info">
+            <i class="fas fa-palette fa-2x mb-3"></i>
+            <p>No featured artworks available at the moment.</p>
+            <% if (typeof user !== 'undefined' && user && (user.role === 'artist' || user.role === 'admin')) { %>
+              <a href="/artworks/create" class="btn btn-primary">Add Your First Artwork</a>
+            <% } %>
+          </div>
         </div>
       <% } %>
     </div>
@@ -140,7 +143,13 @@
         <% }); %>
       <% } else { %>
         <div class="col-12 text-center">
-          <p>No upcoming exhibitions available at the moment.</p>
+          <div class="alert alert-info">
+            <i class="fas fa-cubes fa-2x mb-3"></i>
+            <p>No upcoming exhibitions available at the moment.</p>
+            <% if (typeof user !== 'undefined' && user && (user.role === 'artist' || user.role === 'admin')) { %>
+              <a href="/exhibitions/create" class="btn btn-primary">Create Your First Exhibition</a>
+            <% } %>
+          </div>
         </div>
       <% } %>
     </div>
@@ -173,7 +182,10 @@
         <% }); %>
       <% } else { %>
         <div class="col-12 text-center">
-          <p>No featured artists available at the moment.</p>
+          <div class="alert alert-info">
+            <i class="fas fa-user-circle fa-2x mb-3"></i>
+            <p>No featured artists available at the moment.</p>
+          </div>
         </div>
       <% } %>
     </div>

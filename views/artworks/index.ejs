@@ -1,129 +1,139 @@
 <!-- views/artworks/index.ejs -->
 <section class="py-4">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h2">Browse Artworks</h1>
-        <% if (typeof user !== 'undefined' && user && (user.role === 'artist' || user.role === 'admin')) { %>
-          <a href="/artworks/create" class="btn btn-primary">
-            <i class="fas fa-plus-circle"></i> Add Artwork
-          </a>
-        <% } %>
-      </div>
-      
-      <!-- Filters -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <form action="/artworks" method="GET" class="row g-3 align-items-end">
-            <div class="col-md-3">
-              <label for="category" class="form-label">Category</label>
-              <select name="category" id="category" class="form-select">
-                <option value="">All Categories</option>
-                <% if (categories && categories.length > 0) { %>
-                  <% categories.forEach(category => { %>
-                    <option value="<%= category %>" <%= filter.category === category ? 'selected' : '' %>>
-                      <%= category %>
-                    </option>
-                  <% }); %>
-                <% } %>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label for="minPrice" class="form-label">Min Price</label>
-              <input type="number" name="minPrice" id="minPrice" class="form-control" 
-                    value="<%= filter.minPrice || '' %>" min="0" placeholder="Min">
-            </div>
-            <div class="col-md-2">
-              <label for="maxPrice" class="form-label">Max Price</label>
-              <input type="number" name="maxPrice" id="maxPrice" class="form-control" 
-                    value="<%= filter.maxPrice || '' %>" min="0" placeholder="Max">
-            </div>
-            <div class="col-md-3">
-              <label for="sort" class="form-label">Sort By</label>
-              <select name="sort" id="sort" class="form-select">
-                <option value="-createdAt" <%= filter.sort === '-createdAt' ? 'selected' : '' %>>Newest First</option>
-                <option value="createdAt" <%= filter.sort === 'createdAt' ? 'selected' : '' %>>Oldest First</option>
-                <option value="price" <%= filter.sort === 'price' ? 'selected' : '' %>>Price: Low to High</option>
-                <option value="-price" <%= filter.sort === '-price' ? 'selected' : '' %>>Price: High to Low</option>
-                <option value="title" <%= filter.sort === 'title' ? 'selected' : '' %>>Title: A-Z</option>
-                <option value="-title" <%= filter.sort === '-title' ? 'selected' : '' %>>Title: Z-A</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <button type="submit" class="btn btn-primary w-100">
-                <i class="fas fa-filter"></i> Apply Filters
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-      
-      <!-- Artworks Grid -->
-      <div class="row">
-        <% if(artworks && artworks.length > 0) { %>
-          <% artworks.forEach(artwork => { %>
-            <div class="col-md-3 mb-4">
-              <div class="card h-100">
-                <img src="/uploads/<%= artwork.image %>" class="card-img-top" alt="<%= artwork.title %>" style="height: 200px; object-fit: cover;">
-                <div class="card-body">
-                  <h5 class="card-title"><%= artwork.title %></h5>
-                  <p class="card-text text-muted">by 
-                    <a href="/users/<%= artwork.artist._id %>"><%= artwork.artist.name %></a>
-                  </p>
-                  <p class="card-text"><strong>$<%= artwork.price.toFixed(2) %></strong></p>
-                  <p class="card-text">
-                    <span class="badge bg-primary"><%= artwork.category %></span>
-                  </p>
-                  <a href="/artworks/<%= artwork._id %>" class="btn btn-outline-primary w-100">View Details</a>
-                </div>
-              </div>
-            </div>
-          <% }); %>
-        <% } else { %>
-          <div class="col-12 text-center py-5">
-            <i class="fas fa-palette fa-3x text-muted mb-3"></i>
-            <p class="lead">No artworks found matching your criteria</p>
-            <a href="/artworks" class="btn btn-primary">Clear Filters</a>
-          </div>
-        <% } %>
-      </div>
-      
-      <!-- Pagination -->
-      <% if (pagination && pagination.totalPages > 1) { %>
-        <nav aria-label="Page navigation" class="my-4">
-          <ul class="pagination justify-content-center">
-            <% if (pagination.prev) { %>
-              <li class="page-item">
-                <a class="page-link" href="/artworks?page=<%= pagination.prev.page %>&limit=<%= pagination.prev.limit %>&category=<%= filter.category || '' %>&minPrice=<%= filter.minPrice || '' %>&maxPrice=<%= filter.maxPrice || '' %>&sort=<%= filter.sort || '' %>">
-                  Previous
-                </a>
-              </li>
-            <% } else { %>
-              <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-              </li>
-            <% } %>
-            
-            <% for (let i = 1; i <= pagination.totalPages; i++) { %>
-              <li class="page-item <%= i === parseInt(req.query.page || 1) ? 'active' : '' %>">
-                <a class="page-link" href="/artworks?page=<%= i %>&limit=<%= pagination.next ? pagination.next.limit : pagination.prev.limit %>&category=<%= filter.category || '' %>&minPrice=<%= filter.minPrice || '' %>&maxPrice=<%= filter.maxPrice || '' %>&sort=<%= filter.sort || '' %>">
-                  <%= i %>
-                </a>
-              </li>
-            <% } %>
-            
-            <% if (pagination.next) { %>
-              <li class="page-item">
-                <a class="page-link" href="/artworks?page=<%= pagination.next.page %>&limit=<%= pagination.next.limit %>&category=<%= filter.category || '' %>&minPrice=<%= filter.minPrice || '' %>&maxPrice=<%= filter.maxPrice || '' %>&sort=<%= filter.sort || '' %>">
-                  Next
-                </a>
-              </li>
-            <% } else { %>
-              <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
-              </li>
-            <% } %>
-          </ul>
-        </nav>
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h2">Browse Artworks</h1>
+      <% if (typeof user !== 'undefined' && user && (user.role === 'artist' || user.role === 'admin')) { %>
+        <a href="/artworks/create" class="btn btn-primary">
+          <i class="fas fa-plus-circle"></i> Add Artwork
+        </a>
       <% } %>
     </div>
-  </section>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form action="/artworks" method="GET" class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label for="category" class="form-label">Category</label>
+            <select name="category" id="category" class="form-select">
+              <option value="">All Categories</option>
+              <% if (categories && categories.length > 0) { %>
+                <% categories.forEach(category => { %>
+                  <option value="<%= category %>" <%= filter.category === category ? 'selected' : '' %>>
+                    <%= category %>
+                  </option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="minPrice" class="form-label">Min Price</label>
+            <input type="number" name="minPrice" id="minPrice" class="form-control" 
+                  value="<%= filter.minPrice || '' %>" min="0" placeholder="Min">
+          </div>
+          <div class="col-md-2">
+            <label for="maxPrice" class="form-label">Max Price</label>
+            <input type="number" name="maxPrice" id="maxPrice" class="form-control" 
+                  value="<%= filter.maxPrice || '' %>" min="0" placeholder="Max">
+          </div>
+          <div class="col-md-3">
+            <label for="sort" class="form-label">Sort By</label>
+            <select name="sort" id="sort" class="form-select">
+              <option value="-createdAt" <%= filter.sort === '-createdAt' ? 'selected' : '' %>>Newest First</option>
+              <option value="createdAt" <%= filter.sort === 'createdAt' ? 'selected' : '' %>>Oldest First</option>
+              <option value="price" <%= filter.sort === 'price' ? 'selected' : '' %>>Price: Low to High</option>
+              <option value="-price" <%= filter.sort === '-price' ? 'selected' : '' %>>Price: High to Low</option>
+              <option value="title" <%= filter.sort === 'title' ? 'selected' : '' %>>Title: A-Z</option>
+              <option value="-title" <%= filter.sort === '-title' ? 'selected' : '' %>>Title: Z-A</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-filter"></i> Apply Filters
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Artworks Grid -->
+    <div class="row">
+      <% if(artworks && artworks.length > 0) { %>
+        <% artworks.forEach(artwork => { %>
+          <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+              <img src="/uploads/<%= artwork.image %>" class="card-img-top" alt="<%= artwork.title %>" style="height: 200px; object-fit: cover;">
+              <div class="card-body">
+                <h5 class="card-title"><%= artwork.title %></h5>
+                <p class="card-text text-muted">by 
+                  <a href="/users/<%= artwork.artist._id %>"><%= artwork.artist.name %></a>
+                </p>
+                <p class="card-text"><strong>$<%= artwork.price.toFixed(2) %></strong></p>
+                <p class="card-text">
+                  <span class="badge bg-primary"><%= artwork.category %></span>
+                  <% if (artwork.forSale) { %>
+                    <span class="badge bg-success">For Sale</span>
+                  <% } else { %>
+                    <span class="badge bg-secondary">Not For Sale</span>
+                  <% } %>
+                </p>
+                <a href="/artworks/<%= artwork._id %>" class="btn btn-outline-primary w-100">View Details</a>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="col-12 text-center py-5">
+          <i class="fas fa-palette fa-3x text-muted mb-3"></i>
+          <p class="lead">No artworks found matching your criteria</p>
+          <div class="mt-3">
+            <a href="/artworks" class="btn btn-primary">Clear Filters</a>
+            <% if (typeof user !== 'undefined' && user && (user.role === 'artist' || user.role === 'admin')) { %>
+              <a href="/artworks/create" class="btn btn-outline-primary ms-2">Add Your First Artwork</a>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+    
+    <!-- Pagination -->
+    <% if (pagination && pagination.totalPages > 1) { %>
+      <nav aria-label="Page navigation" class="my-4">
+        <ul class="pagination justify-content-center">
+          <% if (pagination.prev) { %>
+            <li class="page-item">
+              <a class="page-link" href="/artworks?page=<%= pagination.prev.page %>&limit=<%= pagination.prev.limit %>&category=<%= filter.category || '' %>&minPrice=<%= filter.minPrice || '' %>&maxPrice=<%= filter.maxPrice || '' %>&sort=<%= filter.sort || '' %>">
+                Previous
+              </a>
+            </li>
+          <% } else { %>
+            <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+            </li>
+          <% } %>
+          
+          <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+            <li class="page-item <%= i === parseInt(req.query.page || 1) ? 'active' : '' %>">
+              <a class="page-link" href="/artworks?page=<%= i %>&limit=<%= pagination.next ? pagination.next.limit : pagination.prev.limit %>&category=<%= filter.category || '' %>&minPrice=<%= filter.minPrice || '' %>&maxPrice=<%= filter.maxPrice || '' %>&sort=<%= filter.sort || '' %>">
+                <%= i %>
+              </a>
+            </li>
+          <% } %>
+          
+          <% if (pagination.next) { %>
+            <li class="page-item">
+              <a class="page-link" href="/artworks?page=<%= pagination.next.page %>&limit=<%= pagination.next.limit %>&category=<%= filter.category || '' %>&minPrice=<%= filter.minPrice || '' %>&maxPrice=<%= filter.maxPrice || '' %>&sort=<%= filter.sort || '' %>">
+                Next
+              </a>
+            </li>
+          <% } else { %>
+            <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
+    <% } %>
+  </div>
+</section>
