@@ -9,57 +9,75 @@ const apiService = require('../services/apiService');
 // @route   GET /
 // @access  Public
 exports.renderHomePage = async (req, res) => {
+  // Initialize data object with defaults
+  const data = {
+    title: 'Virtual Art Gallery',
+    featuredArtworks: [],
+    upcomingExhibitions: [],
+    featuredArtists: [],
+    weatherData: null,
+    artRecommendations: []
+  };
+
   try {
-    // Get featured artworks
-    const featuredArtworks = await Artwork.find({ forSale: true })
-      .populate('artist', 'name')
-      .sort('-createdAt')
-      .limit(6);
+    // Try to fetch artwork data - wrap in try-catch to continue if DB is down
+    try {
+      // Get featured artworks
+      data.featuredArtworks = await Artwork.find({ forSale: true })
+        .populate('artist', 'name')
+        .sort('-createdAt')
+        .limit(6);
+    } catch (err) {
+      console.warn('Failed to fetch featured artworks:', err.message);
+    }
+
+    // Try to fetch exhibitions data
+    try {
+      // Get upcoming exhibitions
+      const today = new Date();
+      data.upcomingExhibitions = await Exhibition.find({
+        isPublished: true,
+        startDate: { $gte: today }
+      })
+        .populate('curator', 'name')
+        .sort('startDate')
+        .limit(3);
+    } catch (err) {
+      console.warn('Failed to fetch upcoming exhibitions:', err.message);
+    }
+
+    // Try to fetch artists data
+    try {
+      // Get featured artists
+      data.featuredArtists = await User.find({ role: 'artist' })
+        .select('name profileImage bio')
+        .limit(4);
+    } catch (err) {
+      console.warn('Failed to fetch featured artists:', err.message);
+    }
     
-    // Get upcoming exhibitions
-    const today = new Date();
-    const upcomingExhibitions = await Exhibition.find({
-      isPublished: true,
-      startDate: { $gte: today }
-    })
-      .populate('curator', 'name')
-      .sort('startDate')
-      .limit(3);
-    
-    // Get featured artists
-    const featuredArtists = await User.find({ role: 'artist' })
-      .select('name profileImage bio')
-      .limit(4);
-    
-    // Fetch weather data for art viewing recommendation
-    let weatherData = null;
-    let artRecommendations = [];
+    // Try to fetch weather data - if it fails, we'll just use null
     try {
       // Get weather data for New York (as default location)
-      weatherData = await apiService.getWeather('New York');
+      data.weatherData = await apiService.getWeather('New York');
       
       // Get art recommendations based on weather
-      if (weatherData && weatherData.weather && weatherData.weather[0]) {
-        artRecommendations = await apiService.getArtRecommendations(weatherData.weather[0].main);
+      if (data.weatherData && data.weatherData.weather && data.weatherData.weather[0]) {
+        data.artRecommendations = await apiService.getArtRecommendations(data.weatherData.weather[0].main);
       }
-    } catch (error) {
-      console.error('Weather or Art API error:', error);
+    } catch (err) {
+      console.warn('Weather or Art API error:', err.message);
       // Continue without weather data if there's an error
     }
     
-    res.render('pages/home', {
-      title: 'Virtual Art Gallery',
-      featuredArtworks,
-      upcomingExhibitions,
-      featuredArtists,
-      weatherData,
-      artRecommendations
-    });
+    // Render the home page with all available data
+    res.render('pages/home', data);
   } catch (err) {
-    console.error(err);
+    console.error('Error rendering home page:', err);
     res.status(500).render('pages/error', {
       title: 'Server Error',
-      message: 'Server error'
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? err : {}
     });
   }
 };
@@ -100,77 +118,93 @@ exports.processContactForm = (req, res) => {
 // @access  Private
 exports.renderDashboard = async (req, res) => {
   try {
+    const dashboardData = {
+      title: 'Dashboard',
+      userArtworks: [],
+      userExhibitions: [],
+      userPurchases: [],
+      userSales: [],
+      stats: {
+        totalArtworks: 0,
+        totalExhibitions: 0,
+        totalPurchases: 0,
+        totalSales: 0,
+        revenue: 0
+      }
+    };
+
     // Get user's artworks if they are an artist
-    let userArtworks = [];
     if (req.user.role === 'artist' || req.user.role === 'admin') {
-      userArtworks = await Artwork.find({ artist: req.user.id })
-        .sort('-createdAt');
+      try {
+        dashboardData.userArtworks = await Artwork.find({ artist: req.user.id })
+          .sort('-createdAt');
+        dashboardData.stats.totalArtworks = dashboardData.userArtworks.length;
+      } catch (err) {
+        console.warn('Error fetching user artworks:', err.message);
+      }
     }
     
     // Get user's exhibitions if they are an artist
-    let userExhibitions = [];
     if (req.user.role === 'artist' || req.user.role === 'admin') {
-      userExhibitions = await Exhibition.find({ curator: req.user.id })
-        .sort('-createdAt');
+      try {
+        dashboardData.userExhibitions = await Exhibition.find({ curator: req.user.id })
+          .sort('-createdAt');
+        dashboardData.stats.totalExhibitions = dashboardData.userExhibitions.length;
+      } catch (err) {
+        console.warn('Error fetching user exhibitions:', err.message);
+      }
     }
     
     // Get user's purchases
-    const userPurchases = await Purchase.find({ buyer: req.user.id })
-      .populate({
-        path: 'artwork',
-        select: 'title image price'
-      })
-      .populate({
-        path: 'seller',
-        select: 'name'
-      })
-      .sort('-createdAt')
-      .limit(5);
-    
-    // Get user's sales if they are an artist
-    let userSales = [];
-    if (req.user.role === 'artist' || req.user.role === 'admin') {
-      userSales = await Purchase.find({ seller: req.user.id })
+    try {
+      dashboardData.userPurchases = await Purchase.find({ buyer: req.user.id })
         .populate({
           path: 'artwork',
           select: 'title image price'
         })
         .populate({
-          path: 'buyer',
+          path: 'seller',
           select: 'name'
         })
         .sort('-createdAt')
         .limit(5);
+      
+      dashboardData.stats.totalPurchases = await Purchase.countDocuments({ buyer: req.user.id });
+    } catch (err) {
+      console.warn('Error fetching user purchases:', err.message);
     }
     
-    // Calculate some statistics
-    const totalArtworks = userArtworks.length;
-    const totalExhibitions = userExhibitions.length;
-    const totalPurchases = await Purchase.countDocuments({ buyer: req.user.id });
-    const totalSales = await Purchase.countDocuments({ seller: req.user.id });
-    const totalRevenue = await Purchase.aggregate([
-      { $match: { seller: req.user._id } },
-      { $group: { _id: null, total: { $sum: "$amount" } } }
-    ]);
-    
-    const revenue = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
-    
-    res.render('pages/dashboard', {
-      title: 'Dashboard',
-      userArtworks,
-      userExhibitions,
-      userPurchases,
-      userSales,
-      stats: {
-        totalArtworks,
-        totalExhibitions,
-        totalPurchases,
-        totalSales,
-        revenue
+    // Get user's sales if they are an artist
+    if (req.user.role === 'artist' || req.user.role === 'admin') {
+      try {
+        dashboardData.userSales = await Purchase.find({ seller: req.user.id })
+          .populate({
+            path: 'artwork',
+            select: 'title image price'
+          })
+          .populate({
+            path: 'buyer',
+            select: 'name'
+          })
+          .sort('-createdAt')
+          .limit(5);
+        
+        dashboardData.stats.totalSales = await Purchase.countDocuments({ seller: req.user.id });
+        
+        const totalRevenue = await Purchase.aggregate([
+          { $match: { seller: req.user._id } },
+          { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+        
+        dashboardData.stats.revenue = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
+      } catch (err) {
+        console.warn('Error fetching user sales:', err.message);
       }
-    });
+    }
+    
+    res.render('pages/dashboard', dashboardData);
   } catch (err) {
-    console.error(err);
+    console.error('Error rendering dashboard:', err);
     res.status(500).render('pages/error', {
       title: 'Server Error',
       message: 'Server error'
@@ -188,7 +222,7 @@ exports.search = async (req, res) => {
     if (!query) {
       return res.render('pages/search', {
         title: 'Search',
-        results: [],
+        results: {},
         query: '',
         type: 'all'
       });
@@ -198,42 +232,58 @@ exports.search = async (req, res) => {
     
     // Search artworks
     if (type === 'all' || type === 'artworks') {
-      results.artworks = await Artwork.find({
-        $or: [
-          { title: { $regex: query, $options: 'i' } },
-          { description: { $regex: query, $options: 'i' } },
-          { category: { $regex: query, $options: 'i' } }
-        ]
-      })
-        .populate('artist', 'name')
-        .limit(20);
+      try {
+        results.artworks = await Artwork.find({
+          $or: [
+            { title: { $regex: query, $options: 'i' } },
+            { description: { $regex: query, $options: 'i' } },
+            { category: { $regex: query, $options: 'i' } }
+          ],
+          forSale: true
+        })
+          .populate('artist', 'name')
+          .limit(20);
+      } catch (err) {
+        console.warn('Error searching artworks:', err.message);
+        results.artworks = [];
+      }
     }
     
     // Search exhibitions
     if (type === 'all' || type === 'exhibitions') {
-      results.exhibitions = await Exhibition.find({
-        isPublished: true,
-        $or: [
-          { title: { $regex: query, $options: 'i' } },
-          { description: { $regex: query, $options: 'i' } },
-          { tags: { $in: [new RegExp(query, 'i')] } }
-        ]
-      })
-        .populate('curator', 'name')
-        .limit(20);
+      try {
+        results.exhibitions = await Exhibition.find({
+          isPublished: true,
+          $or: [
+            { title: { $regex: query, $options: 'i' } },
+            { description: { $regex: query, $options: 'i' } },
+            { tags: { $in: [new RegExp(query, 'i')] } }
+          ]
+        })
+          .populate('curator', 'name')
+          .limit(20);
+      } catch (err) {
+        console.warn('Error searching exhibitions:', err.message);
+        results.exhibitions = [];
+      }
     }
     
     // Search artists
     if (type === 'all' || type === 'artists') {
-      results.artists = await User.find({
-        role: 'artist',
-        $or: [
-          { name: { $regex: query, $options: 'i' } },
-          { bio: { $regex: query, $options: 'i' } }
-        ]
-      })
-        .select('name profileImage bio')
-        .limit(20);
+      try {
+        results.artists = await User.find({
+          role: 'artist',
+          $or: [
+            { name: { $regex: query, $options: 'i' } },
+            { bio: { $regex: query, $options: 'i' } }
+          ]
+        })
+          .select('name profileImage bio')
+          .limit(20);
+      } catch (err) {
+        console.warn('Error searching artists:', err.message);
+        results.artists = [];
+      }
     }
     
     res.render('pages/search', {
@@ -243,7 +293,7 @@ exports.search = async (req, res) => {
       type: type || 'all'
     });
   } catch (err) {
-    console.error(err);
+    console.error('Error processing search:', err);
     res.status(500).render('pages/error', {
       title: 'Server Error',
       message: 'Server error'
