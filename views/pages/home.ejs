@@ -1,0 +1,210 @@
+<!-- views/pages/home.ejs -->
+<section class="hero-section text-center mb-5">
+    <div class="container">
+      <h1 class="display-4">Welcome to Virtual Art Gallery</h1>
+      <p class="lead">Explore beautiful art in immersive 3D exhibitions</p>
+      <div class="mt-4">
+        <a href="/exhibitions" class="btn btn-primary btn-lg me-2">Explore Exhibitions</a>
+        <a href="/artworks" class="btn btn-outline-primary btn-lg">Browse Artworks</a>
+      </div>
+    </div>
+  </section>
+  
+  <% if (weatherData) { %>
+  <section class="weather-art-section mb-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="weather-widget">
+            <h3 class="text-primary">Today's Art Mood</h3>
+            <div class="d-flex align-items-center mb-3">
+              <% if (weatherData.weather && weatherData.weather[0]) { %>
+                <% const weatherIcon = weatherData.weather[0].icon; %>
+                <img src="https://openweathermap.org/img/wn/<%= weatherIcon %>@2x.png" alt="Weather" class="weather-icon">
+                <div>
+                  <h4><%= weatherData.name %></h4>
+                  <p class="mb-0"><%= Math.round(weatherData.main.temp) %>°C, <%= weatherData.weather[0].description %></p>
+                </div>
+              <% } %>
+            </div>
+            <p>Weather can influence how we perceive art. Today's conditions might enhance your experience with:</p>
+            <ul>
+              <% if (weatherData.weather && weatherData.weather[0]) { %>
+                <% const weather = weatherData.weather[0].main; %>
+                <% if (weather === 'Clear') { %>
+                  <li>Bright, colorful paintings</li>
+                  <li>Outdoor scenes and landscapes</li>
+                <% } else if (weather === 'Clouds') { %>
+                  <li>Abstract and atmospheric works</li>
+                  <li>Impressionist paintings</li>
+                <% } else if (weather === 'Rain' || weather === 'Drizzle') { %>
+                  <li>Moody, reflective pieces</li>
+                  <li>Water-themed artworks</li>
+                <% } else if (weather === 'Snow') { %>
+                  <li>Winter landscapes</li>
+                  <li>Minimalist artworks</li>
+                <% } else if (weather === 'Thunderstorm') { %>
+                  <li>Dramatic and emotional pieces</li>
+                  <li>High-contrast works</li>
+                <% } else { %>
+                  <li>Contemporary artworks</li>
+                  <li>Photography exhibitions</li>
+                <% } %>
+              <% } %>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="col-md-8">
+          <% if (artRecommendations && artRecommendations.length > 0) { %>
+            <h3 class="section-title">Art Recommendations Based on Weather</h3>
+            <div class="row">
+              <% artRecommendations.slice(0, 4).forEach(art => { %>
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100">
+                    <% const imageId = art.image_id; %>
+                    <% if (imageId) { %>
+                      <img src="https://www.artic.edu/iiif/2/<%= imageId %>/full/400,/0/default.jpg" 
+                           class="card-img-top" alt="<%= art.title %>">
+                    <% } else { %>
+                      <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <span class="text-white">No Image Available</span>
+                      </div>
+                    <% } %>
+                    <div class="card-body">
+                      <h5 class="card-title"><%= art.title %></h5>
+                      <p class="card-text text-muted"><%= art.artist_display %></p>
+                      <a href="https://www.artic.edu/artworks/<%= art.id %>" target="_blank" class="btn btn-sm btn-outline-primary">View at Art Institute</a>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+  <% } %>
+  
+  <section class="featured-artworks mb-5">
+    <div class="container">
+      <h2 class="section-title">Featured Artworks</h2>
+      <div class="row">
+        <% if(featuredArtworks && featuredArtworks.length > 0) { %>
+          <% featuredArtworks.forEach(artwork => { %>
+            <div class="col-md-4 mb-4">
+              <div class="card h-100">
+                <img src="/uploads/<%= artwork.image %>" class="card-img-top" alt="<%= artwork.title %>">
+                <div class="card-body">
+                  <h5 class="card-title"><%= artwork.title %></h5>
+                  <p class="card-text text-muted">by <%= artwork.artist.name %></p>
+                  <p class="card-text"><strong>$<%= artwork.price.toFixed(2) %></strong></p>
+                  <a href="/artworks/<%= artwork._id %>" class="btn btn-sm btn-outline-primary">View Details</a>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="col-12 text-center">
+            <p>No featured artworks available at the moment.</p>
+          </div>
+        <% } %>
+      </div>
+      <div class="text-center mt-3">
+        <a href="/artworks" class="btn btn-primary">View All Artworks</a>
+      </div>
+    </div>
+  </section>
+  
+  <section class="upcoming-exhibitions mb-5">
+    <div class="container">
+      <h2 class="section-title">Upcoming Exhibitions</h2>
+      <div class="row">
+        <% if(upcomingExhibitions && upcomingExhibitions.length > 0) { %>
+          <% upcomingExhibitions.forEach(exhibition => { %>
+            <div class="col-md-4 mb-4">
+              <div class="card h-100">
+                <img src="/uploads/<%= exhibition.coverImage %>" class="card-img-top" alt="<%= exhibition.title %>">
+                <div class="card-body">
+                  <h5 class="card-title"><%= exhibition.title %></h5>
+                  <p class="card-text text-muted">Curated by <%= exhibition.curator.name %></p>
+                  <p class="card-text">
+                    <small class="text-muted">
+                      <%= new Date(exhibition.startDate).toLocaleDateString() %> - 
+                      <%= new Date(exhibition.endDate).toLocaleDateString() %>
+                    </small>
+                  </p>
+                  <a href="/exhibitions/<%= exhibition._id %>" class="btn btn-sm btn-outline-primary">View Details</a>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="col-12 text-center">
+            <p>No upcoming exhibitions available at the moment.</p>
+          </div>
+        <% } %>
+      </div>
+      <div class="text-center mt-3">
+        <a href="/exhibitions" class="btn btn-primary">View All Exhibitions</a>
+      </div>
+    </div>
+  </section>
+  
+  <section class="featured-artists mb-5">
+    <div class="container">
+      <h2 class="section-title">Featured Artists</h2>
+      <div class="row">
+        <% if(featuredArtists && featuredArtists.length > 0) { %>
+          <% featuredArtists.forEach(artist => { %>
+            <div class="col-md-3 mb-4 text-center">
+              <div class="card h-100 border-0">
+                <div class="mx-auto mb-3">
+                  <img src="/uploads/<%= artist.profileImage %>" class="rounded-circle" alt="<%= artist.name %>" style="width: 150px; height: 150px; object-fit: cover;">
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title"><%= artist.name %></h5>
+                  <% if (artist.bio) { %>
+                    <p class="card-text"><%= artist.bio.substring(0, 100) %>...</p>
+                  <% } %>
+                  <a href="/users/<%= artist._id %>" class="btn btn-sm btn-outline-primary">View Profile</a>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="col-12 text-center">
+            <p>No featured artists available at the moment.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </section>
+  
+  <section class="join-us bg-light py-5 text-center">
+    <div class="container">
+      <h2 class="section-title">Join Our Community</h2>
+      <p class="lead mb-4">Create an account to showcase your artwork or start collecting amazing pieces from talented artists</p>
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card mb-3">
+            <div class="card-body">
+              <h3 class="card-title">For Artists</h3>
+              <p class="card-text">Share your work with a global audience and create immersive 3D exhibitions</p>
+              <a href="/users/register" class="btn btn-primary">Create Artist Account</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <h3 class="card-title">For Collectors</h3>
+              <p class="card-text">Discover unique artworks and build your collection with pieces you love</p>
+              <a href="/users/register" class="btn btn-primary">Create Collector Account</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>

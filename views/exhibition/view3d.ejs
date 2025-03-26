@@ -1,0 +1,126 @@
+<!-- views/exhibitions/view3d.ejs -->
+<div class="container-fluid p-0">
+    <div class="exhibition-header bg-dark text-white p-4">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1><%= exhibition.title %></h1>
+          <a href="/exhibitions/<%= exhibition._id %>" class="btn btn-outline-light">Exit 3D View</a>
+        </div>
+        <p class="mb-0">Curated by <%= exhibition.curator.name %></p>
+      </div>
+    </div>
+  
+    <div class="position-relative">
+      <!-- 3D Container -->
+      <div id="exhibition-container" class="w-100" style="height: 80vh;"></div>
+      
+      <!-- Artwork Details Panel -->
+      <div id="artwork-details" class="artwork-details">
+        <button type="button" class="btn-close float-end" onclick="document.getElementById('artwork-details').style.display='none'"></button>
+        <div id="artwork-content">
+          <h3>Select an artwork</h3>
+          <p>Click on any artwork in the exhibition to view details.</p>
+        </div>
+      </div>
+      
+      <!-- Controls Panel -->
+      <div class="exhibition-controls">
+        <button class="btn btn-sm btn-light me-2" id="zoom-in"><i class="fas fa-search-plus"></i> Zoom In</button>
+        <button class="btn btn-sm btn-light me-2" id="zoom-out"><i class="fas fa-search-minus"></i> Zoom Out</button>
+        <button class="btn btn-sm btn-light" id="reset-camera"><i class="fas fa-sync"></i> Reset View</button>
+      </div>
+    </div>
+  
+    <div class="container mt-4">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h3>About This Exhibition</h3>
+              <p><%= exhibition.description %></p>
+              <p>
+                <strong>Dates:</strong> 
+                <%= new Date(exhibition.startDate).toLocaleDateString() %> - 
+                <%= new Date(exhibition.endDate).toLocaleDateString() %>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-body">
+              <h3>Featured Artworks</h3>
+              <ul class="list-group list-group-flush">
+                <% if (exhibition.artworks && exhibition.artworks.length > 0) { %>
+                  <% exhibition.artworks.forEach(artwork => { %>
+                    <li class="list-group-item">
+                      <a href="/artworks/<%= artwork._id %>" class="text-decoration-none">
+                        <%= artwork.title %> by <%= artwork.artist.name %>
+                      </a>
+                    </li>
+                  <% }); %>
+                <% } else { %>
+                  <li class="list-group-item">No artworks in this exhibition.</li>
+                <% } %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  
+  <!-- Pass exhibition data to JavaScript -->
+  <script>
+    // Convert exhibition data to JSON and pass to Three.js
+    const exhibitionData = <%- JSON.stringify({
+      id: exhibition._id,
+      title: exhibition.title,
+      sceneData: exhibition.sceneData,
+      artworks: exhibition.artworks.map(artwork => ({
+        _id: artwork._id,
+        title: artwork.title,
+        description: artwork.description.substring(0, 150) + '...',
+        image: artwork.image,
+        price: artwork.price,
+        forSale: artwork.forSale,
+        artist: {
+          name: artwork.artist.name
+        }
+      }))
+    }) %>;
+  </script>
+  
+  <!-- Three.js Main Script -->
+  <script src="/js/exhibition3D.js"></script>
+  
+  <!-- Initialize 3D Scene -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize 3D scene with exhibition data
+      window.Exhibition3D.init(exhibitionData);
+      window.Exhibition3D.setupInteraction();
+      
+      // Control buttons
+      document.getElementById('zoom-in').addEventListener('click', function() {
+        const camera = window.Exhibition3D.getCamera();
+        if (camera.position.z > 2) {
+          camera.position.z -= 1;
+        }
+      });
+      
+      document.getElementById('zoom-out').addEventListener('click', function() {
+        const camera = window.Exhibition3D.getCamera();
+        if (camera.position.z < 20) {
+          camera.position.z += 1;
+        }
+      });
+      
+      document.getElementById('reset-camera').addEventListener('click', function() {
+        window.Exhibition3D.resetCamera();
+      });
+    });
+  </script>

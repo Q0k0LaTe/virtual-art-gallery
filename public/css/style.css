@@ -1,0 +1,278 @@
+/* public/css/style.css */
+
+/* ===== Global Styles ===== */
+:root {
+    --primary-color: #3d5a80;
+    --secondary-color: #98c1d9;
+    --accent-color: #ee6c4d;
+    --light-color: #e0fbfc;
+    --dark-color: #293241;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--dark-color);
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  main {
+    flex: 1;
+  }
+  
+  /* ===== Navbar ===== */
+  .navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .navbar-brand {
+    font-weight: bold;
+    color: var(--light-color);
+  }
+  
+  /* ===== Hero Section ===== */
+  .hero-section {
+    padding: 4rem 0;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    color: white;
+    margin-top: -1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* ===== Section Titles ===== */
+  .section-title {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    text-align: center;
+    color: var(--primary-color);
+  }
+  
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background-color: var(--accent-color);
+  }
+  
+  /* ===== Cards ===== */
+  .card {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .card-img-top {
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+  }
+  
+  /* ===== Exhibition View ===== */
+  .exhibition-container {
+    position: relative;
+    width: 100%;
+    min-height: 500px;
+    margin-bottom: 2rem;
+  }
+  
+  .exhibition-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .artwork-details {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    display: none;
+  }
+  
+  /* ===== Forms ===== */
+  .form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(152, 193, 217, 0.25);
+  }
+  
+  .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  .btn-primary:hover {
+    background-color: #324b69;
+    border-color: #324b69;
+  }
+  
+  .btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: var(--primary-color);
+  }
+  
+  /* ===== Profile Page ===== */
+  .profile-header {
+    background-color: var(--light-color);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+  }
+  
+  .profile-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* ===== Dashboard ===== */
+  .dashboard-stats {
+    margin-bottom: 2rem;
+  }
+  
+  .stat-card {
+    text-align: center;
+    padding: 1.5rem;
+    border-radius: 4px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-card .icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
+  
+  .stat-card .count {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--dark-color);
+  }
+  
+  .stat-card .label {
+    color: #6c757d;
+  }
+  
+  /* ===== Artwork Details ===== */
+  .artwork-image {
+    max-height: 500px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .artwork-info {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* ===== Responsive Adjustments ===== */
+  @media (max-width: 768px) {
+    .hero-section {
+      padding: 2rem 0;
+    }
+    
+    .profile-image {
+      width: 100px;
+      height: 100px;
+    }
+    
+    .exhibition-container {
+      min-height: 400px;
+    }
+    
+    .artwork-details {
+      width: 100%;
+      top: auto;
+      right: auto;
+      bottom: 0;
+      left: 0;
+      border-radius: 0;
+    }
+  }
+  
+  /* ===== Footer ===== */
+  footer {
+    margin-top: auto;
+  }
+  
+  /* ===== Weather Widget ===== */
+  .weather-widget {
+    background-color: white;
+    border-radius: 4px;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+  }
+  
+  .weather-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+  }
+  
+  /* ===== Three.js Integration ===== */
+  canvas {
+    display: block;
+    width: 100%;
+    outline: none;
+  }
+  
+  /* ===== Utilities ===== */
+  .text-primary {
+    color: var(--primary-color) !important;
+  }
+  
+  .text-secondary {
+    color: var(--secondary-color) !important;
+  }
+  
+  .text-accent {
+    color: var(--accent-color) !important;
+  }
+  
+  .bg-primary {
+    background-color: var(--primary-color) !important;
+  }
+  
+  .bg-secondary {
+    background-color: var(--secondary-color) !important;
+  }
+  
+  .bg-accent {
+    background-color: var(--accent-color) !important;
+  }
