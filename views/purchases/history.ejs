@@ -1,0 +1,197 @@
+<!-- views/purchases/history.ejs -->
+<section class="py-4">
+    <div class="container">
+      <h1 class="h2 mb-4"><%= title %></h1>
+      
+      <div class="row mb-4">
+        <div class="col-md-8">
+          <!-- Tab Navigation -->
+          <ul class="nav nav-tabs">
+            <li class="nav-item">
+              <a class="nav-link <%= isBuyer ? 'active' : '' %>" href="/purchases/history">
+                <i class="fas fa-shopping-cart"></i> My Purchases
+              </a>
+            </li>
+            <% if (user.role === 'artist' || user.role === 'admin') { %>
+              <li class="nav-item">
+                <a class="nav-link <%= !isBuyer ? 'active' : '' %>" href="/purchases/sales">
+                  <i class="fas fa-dollar-sign"></i> My Sales
+                </a>
+              </li>
+            <% } %>
+          </ul>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search by artwork title..." id="searchInput">
+            <button class="btn btn-outline-secondary" type="button" id="searchButton">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Purchases/Sales Table -->
+      <div class="card shadow">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover" id="purchasesTable">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 80px">Artwork</th>
+                  <th>Title</th>
+                  <% if (isBuyer) { %>
+                    <th>Artist</th>
+                  <% } else { %>
+                    <th>Buyer</th>
+                  <% } %>
+                  <th>Price</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (purchases && purchases.length > 0) { %>
+                  <% purchases.forEach(purchase => { %>
+                    <tr>
+                      <td>
+                        <img src="/uploads/<%= purchase.artwork.image %>" alt="<%= purchase.artwork.title %>" class="img-thumbnail" width="60">
+                      </td>
+                      <td><%= purchase.artwork.title %></td>
+                      <% if (isBuyer) { %>
+                        <td><%= purchase.seller.name %></td>
+                      <% } else { %>
+                        <td><%= purchase.buyer.name %></td>
+                      <% } %>
+                      <td>$<%= purchase.amount.toFixed(2) %></td>
+                      <td><%= new Date(purchase.createdAt).toLocaleDateString() %></td>
+                      <td>
+                        <% if (purchase.status === 'completed') { %>
+                          <span class="badge bg-success">Completed</span>
+                        <% } else if (purchase.status === 'pending') { %>
+                          <span class="badge bg-warning text-dark">Pending</span>
+                        <% } else if (purchase.status === 'cancelled') { %>
+                          <span class="badge bg-danger">Cancelled</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <a href="/purchases/<%= purchase._id %>" class="btn btn-sm btn-outline-primary">
+                          <i class="fas fa-info-circle"></i> Details
+                        </a>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="7" class="text-center py-4">
+                      <% if (isBuyer) { %>
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <p class="mb-0">You haven't made any purchases yet.</p>
+                        <a href="/artworks" class="btn btn-sm btn-primary mt-2">Browse Artworks</a>
+                      <% } else { %>
+                        <i class="fas fa-dollar-sign fa-3x text-muted mb-3"></i>
+                        <p class="mb-0">You haven't made any sales yet.</p>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Summary Cards for Sales Statistics (for artists) -->
+  <% if (!isBuyer && purchases && purchases.length > 0) { %>
+    <section class="py-4 bg-light">
+      <div class="container">
+        <h2 class="h4 mb-4">Sales Summary</h2>
+        
+        <div class="row">
+          <div class="col-md-3 mb-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <h3 class="h1 text-primary mb-3">
+                  <%= purchases.length %>
+                </h3>
+                <p class="text-muted mb-0">Total Sales</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-3 mb-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <h3 class="h1 text-primary mb-3">
+                  $<%= purchases.reduce((total, purchase) => total + purchase.amount, 0).toFixed(2) %>
+                </h3>
+                <p class="text-muted mb-0">Total Revenue</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-3 mb-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <h3 class="h1 text-primary mb-3">
+                  $<%= (purchases.reduce((total, purchase) => total + purchase.amount, 0) / purchases.length).toFixed(2) %>
+                </h3>
+                <p class="text-muted mb-0">Average Sale</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-3 mb-4">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <h3 class="h1 text-primary mb-3">
+                  <%= new Set(purchases.map(purchase => purchase.buyer._id.toString())).size %>
+                </h3>
+                <p class="text-muted mb-0">Unique Buyers</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  <% } %>
+  
+  <!-- Search Functionality Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('searchInput');
+      const searchButton = document.getElementById('searchButton');
+      const table = document.getElementById('purchasesTable');
+      const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+      
+      function performSearch() {
+        const query = searchInput.value.toLowerCase();
+        
+        for (let i = 0; i < rows.length; i++) {
+          const titleColumn = rows[i].getElementsByTagName('td')[1];
+          
+          if (titleColumn) {
+            const text = titleColumn.textContent || titleColumn.innerText;
+            
+            if (text.toLowerCase().indexOf(query) > -1) {
+              rows[i].style.display = '';
+            } else {
+              rows[i].style.display = 'none';
+            }
+          }
+        }
+      }
+      
+      searchButton.addEventListener('click', performSearch);
+      
+      searchInput.addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+          performSearch();
+        }
+      });
+    });
+  </script>

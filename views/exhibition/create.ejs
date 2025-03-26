@@ -1,0 +1,252 @@
+<!-- views/exhibitions/create.ejs -->
+<section class="py-4">
+    <div class="container">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="/exhibitions">Exhibitions</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Create New Exhibition</li>
+        </ol>
+      </nav>
+      
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+              <h1 class="h3 mb-0">Create New Exhibition</h1>
+            </div>
+            <div class="card-body">
+              <form action="/exhibitions" method="POST" enctype="multipart/form-data">
+                <!-- Basic Information -->
+                <div class="mb-4">
+                  <h2 class="h5 mb-3">Basic Information</h2>
+                  
+                  <div class="mb-3">
+                    <label for="title" class="form-label">Exhibition Title *</label>
+                    <input type="text" class="form-control" id="title" name="title" required maxlength="100">
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="description" class="form-label">Description *</label>
+                    <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                    <div class="form-text">Provide a detailed description of your exhibition.</div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="startDate" class="form-label">Start Date *</label>
+                        <input type="date" class="form-control" id="startDate" name="startDate" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="endDate" class="form-label">End Date *</label>
+                        <input type="date" class="form-control" id="endDate" name="endDate" required>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="coverImage" class="form-label">Cover Image *</label>
+                    <input class="form-control" type="file" id="coverImage" name="coverImage" accept="image/jpeg,image/png,image/gif" required>
+                    <div class="form-text">Upload a high-quality image for your exhibition cover. Supported formats: JPG, PNG, GIF. Max size: 5MB.</div>
+                    <div class="mt-3">
+                      <div id="imagePreview" class="d-none mt-2">
+                        <img src="" alt="Preview" class="img-thumbnail" style="max-height: 200px;">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Select Artworks -->
+                <div class="mb-4">
+                  <h2 class="h5 mb-3">Select Artworks</h2>
+                  
+                  <div class="mb-3">
+                    <p>Choose artworks from your collection to include in this exhibition:</p>
+                    
+                    <% if (artworks && artworks.length > 0) { %>
+                      <div class="row">
+                        <% artworks.forEach(artwork => { %>
+                          <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                              <img src="/uploads/<%= artwork.image %>" class="card-img-top" alt="<%= artwork.title %>" style="height: 120px; object-fit: cover;">
+                              <div class="card-body">
+                                <div class="form-check">
+                                  <input class="form-check-input" type="checkbox" name="artworkIds" value="<%= artwork._id %>" id="artwork<%= artwork._id %>">
+                                  <label class="form-check-label" for="artwork<%= artwork._id %>">
+                                    <%= artwork.title %>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        <% }); %>
+                      </div>
+                    <% } else { %>
+                      <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> You don't have any artworks yet.
+                        <a href="/artworks/create" class="alert-link">Create artwork</a> first before making an exhibition.
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+                
+                <!-- 3D Scene Configuration -->
+                <div class="mb-4">
+                  <h2 class="h5 mb-3">3D Scene Configuration</h2>
+                  
+                  <div class="mb-3">
+                    <label for="themeColor" class="form-label">Theme Color</label>
+                    <input type="color" class="form-control form-control-color" id="themeColor" name="themeColor" value="#f0f0f0">
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="roomWidth" class="form-label">Room Width</label>
+                        <input type="number" class="form-control" id="roomWidth" name="roomWidth" value="20" min="10" max="50">
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="roomHeight" class="form-label">Room Height</label>
+                        <input type="number" class="form-control" id="roomHeight" name="roomHeight" value="4" min="3" max="10">
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="roomDepth" class="form-label">Room Depth</label>
+                        <input type="number" class="form-control" id="roomDepth" name="roomDepth" value="20" min="10" max="50">
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="wallColor" class="form-label">Wall Color</label>
+                        <input type="color" class="form-control form-control-color" id="wallColor" name="wallColor" value="#ffffff">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="floorColor" class="form-label">Floor Color</label>
+                        <input type="color" class="form-control form-control-color" id="floorColor" name="floorColor" value="#aaaaaa">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Publication Settings -->
+                <div class="mb-4">
+                  <h2 class="h5 mb-3">Publication Settings</h2>
+                  
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="isPublished" value="true" id="isPublished">
+                        <label class="form-check-label" for="isPublished">Publish exhibition immediately</label>
+                      </div>
+                      <div class="form-text">If unchecked, the exhibition will be saved as a draft that only you can view.</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Create Exhibition
+                  </button>
+                  <a href="/dashboard" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4">
+          <div class="card shadow sticky-top" style="top: 20px; z-index: 10;">
+            <div class="card-header">
+              <h2 class="h5 mb-0">Tips for Creating a Great Exhibition</h2>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled">
+                <li class="mb-3">
+                  <i class="fas fa-palette text-primary me-2"></i>
+                  <strong>Choose a Theme:</strong> Select artworks that share a common theme, style, or story.
+                </li>
+                <li class="mb-3">
+                  <i class="fas fa-camera text-primary me-2"></i>
+                  <strong>High-Quality Images:</strong> Use clear, well-lit photos of your artwork.
+                </li>
+                <li class="mb-3">
+                  <i class="fas fa-paint-brush text-primary me-2"></i>
+                  <strong>Curate Carefully:</strong> Less is often more. Select your best pieces rather than including everything.
+                </li>
+                <li class="mb-3">
+                  <i class="fas fa-pen text-primary me-2"></i>
+                  <strong>Compelling Description:</strong> Tell visitors what makes your exhibition special and what they'll experience.
+                </li>
+                <li class="mb-3">
+                  <i class="fas fa-cube text-primary me-2"></i>
+                  <strong>3D Space Design:</strong> Adjust room dimensions and colors to complement your artwork.
+                </li>
+                <li class="mb-3">
+                  <i class="fas fa-share-alt text-primary me-2"></i>
+                  <strong>Share Your Exhibition:</strong> Once published, share the link with your network on social media.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Image Preview Script -->
+  <script>
+    document.getElementById('coverImage').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      const preview = document.getElementById('imagePreview');
+      const previewImg = preview.querySelector('img');
+      
+      if (file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          previewImg.src = e.target.result;
+          preview.classList.remove('d-none');
+        };
+        
+        reader.readAsDataURL(file);
+      } else {
+        preview.classList.add('d-none');
+      }
+    });
+    
+    // Validate start and end dates
+    document.getElementById('endDate').addEventListener('change', function() {
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      
+      if (endDate <= startDate) {
+        alert('End date must be after start date.');
+        this.value = '';
+      }
+    });
+    
+    document.getElementById('startDate').addEventListener('change', function() {
+      const endDateInput = document.getElementById('endDate');
+      if (endDateInput.value) {
+        const startDate = new Date(this.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (endDate <= startDate) {
+          alert('End date must be after start date.');
+          endDateInput.value = '';
+        }
+      }
+    });
+  </script>

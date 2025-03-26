@@ -1,0 +1,278 @@
+<!-- views/purchases/details.ejs -->
+<section class="py-4">
+    <div class="container">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item">
+            <% if (isBuyer) { %>
+              <a href="/purchases/history">My Purchases</a>
+            <% } else { %>
+              <a href="/purchases/sales">My Sales</a>
+            <% } %>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Purchase Details</li>
+        </ol>
+      </nav>
+      
+      <div class="row">
+        <div class="col-lg-8">
+          <!-- Purchase Information -->
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h1 class="h3 mb-0">Purchase Details</h1>
+            </div>
+            <div class="card-body">
+              <div class="mb-4">
+                <div class="d-flex align-items-center">
+                  <div class="me-4">
+                    <img src="/uploads/<%= purchase.artwork.image %>" alt="<%= purchase.artwork.title %>" class="img-thumbnail" style="max-width: 150px;">
+                  </div>
+                  <div>
+                    <h2 class="h4 mb-1"><%= purchase.artwork.title %></h2>
+                    <p class="mb-1">
+                      <strong>Category:</strong> <%= purchase.artwork.category %>
+                    </p>
+                    <p class="mb-1">
+                      <strong>Dimensions:</strong> 
+                      <%= purchase.artwork.dimensions.width %> × 
+                      <%= purchase.artwork.dimensions.height %>
+                      <% if (purchase.artwork.dimensions.depth > 0) { %> × <%= purchase.artwork.dimensions.depth %><% } %> 
+                      <%= purchase.artwork.dimensions.unit %>
+                    </p>
+                    <a href="/artworks/<%= purchase.artwork._id %>" class="btn btn-sm btn-outline-primary mt-2">
+                      <i class="fas fa-eye"></i> View Artwork
+                    </a>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <h3 class="h5">Buyer Information</h3>
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <img src="/uploads/<%= purchase.buyer.profileImage %>" alt="<%= purchase.buyer.name %>" class="rounded-circle me-3" width="50" height="50">
+                        <div>
+                          <h4 class="h6 mb-1"><%= purchase.buyer.name %></h4>
+                          <p class="small mb-0"><%= purchase.buyer.email %></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <h3 class="h5">Seller Information</h3>
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <img src="/uploads/<%= purchase.seller.profileImage %>" alt="<%= purchase.seller.name %>" class="rounded-circle me-3" width="50" height="50">
+                        <div>
+                          <h4 class="h6 mb-1"><%= purchase.seller.name %></h4>
+                          <p class="small mb-0"><%= purchase.seller.email %></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <h3 class="h5">Transaction Details</h3>
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <tbody>
+                    <tr>
+                      <th style="width: 30%">Transaction ID</th>
+                      <td><code><%= purchase.transactionId %></code></td>
+                    </tr>
+                    <tr>
+                      <th>Date</th>
+                      <td><%= new Date(purchase.createdAt).toLocaleString() %></td>
+                    </tr>
+                    <tr>
+                      <th>Status</th>
+                      <td>
+                        <% if (purchase.status === 'completed') { %>
+                          <span class="badge bg-success">Completed</span>
+                        <% } else if (purchase.status === 'pending') { %>
+                          <span class="badge bg-warning text-dark">Pending</span>
+                        <% } else if (purchase.status === 'cancelled') { %>
+                          <span class="badge bg-danger">Cancelled</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Amount</th>
+                      <td class="fw-bold">$<%= purchase.amount.toFixed(2) %></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Artwork Description -->
+          <div class="card shadow">
+            <div class="card-header">
+              <h2 class="h5 mb-0">Artwork Description</h2>
+            </div>
+            <div class="card-body">
+              <p><%= purchase.artwork.description %></p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4">
+          <!-- Purchase Summary -->
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h2 class="h5 mb-0">Purchase Summary</h2>
+            </div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-3">
+                <span>Artwork Price</span>
+                <span>$<%= purchase.amount.toFixed(2) %></span>
+              </div>
+              <div class="d-flex justify-content-between mb-3">
+                <span>Platform Fee</span>
+                <span>$0.00</span>
+              </div>
+              <div class="d-flex justify-content-between mb-3">
+                <span>Shipping</span>
+                <span>$0.00</span>
+              </div>
+              <hr>
+              <div class="d-flex justify-content-between mb-3 fw-bold">
+                <span>Total</span>
+                <span>$<%= purchase.amount.toFixed(2) %></span>
+              </div>
+              
+              <% if (purchase.status === 'completed') { %>
+                <div class="alert alert-success text-center mt-4">
+                  <i class="fas fa-check-circle fa-2x mb-2"></i>
+                  <p class="mb-0">Payment completed</p>
+                  <small><%= new Date(purchase.createdAt).toLocaleString() %></small>
+                </div>
+              <% } else if (purchase.status === 'pending') { %>
+                <div class="alert alert-warning text-center mt-4">
+                  <i class="fas fa-clock fa-2x mb-2"></i>
+                  <p class="mb-0">Payment pending</p>
+                  <small>Processing your payment</small>
+                </div>
+              <% } else if (purchase.status === 'cancelled') { %>
+                <div class="alert alert-danger text-center mt-4">
+                  <i class="fas fa-times-circle fa-2x mb-2"></i>
+                  <p class="mb-0">Payment cancelled</p>
+                  <small><%= new Date(purchase.updatedAt).toLocaleString() %></small>
+                </div>
+              <% } %>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h2 class="h5 mb-0">Actions</h2>
+            </div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <a href="/artworks/<%= purchase.artwork._id %>" class="btn btn-outline-primary">
+                  <i class="fas fa-eye"></i> View Artwork Details
+                </a>
+                
+                <% if (isBuyer) { %>
+                  <% if (purchase.status === 'pending') { %>
+                    <!-- In a real app, you'd have cancel payment functionality -->
+                    <button class="btn btn-outline-danger" disabled>
+                      <i class="fas fa-times-circle"></i> Cancel Payment
+                    </button>
+                  <% } %>
+                  
+                  <a href="#" class="btn btn-outline-secondary">
+                    <i class="fas fa-envelope"></i> Contact Seller
+                  </a>
+                <% } else { %>
+                  <a href="#" class="btn btn-outline-secondary">
+                    <i class="fas fa-envelope"></i> Contact Buyer
+                  </a>
+                <% } %>
+                
+                <% if (isBuyer) { %>
+                  <a href="/purchases/history" class="btn btn-link">
+                    <i class="fas fa-arrow-left"></i> Back to Purchase History
+                  </a>
+                <% } else { %>
+                  <a href="/purchases/sales" class="btn btn-link">
+                    <i class="fas fa-arrow-left"></i> Back to Sales History
+                  </a>
+                <% } %>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Need Help? -->
+          <div class="card bg-light border-0">
+            <div class="card-body">
+              <h2 class="h5">Need Help?</h2>
+              <p class="small">If you have any questions about this purchase, please contact our support team.</p>
+              <a href="/contact" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-question-circle"></i> Get Support
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Related Artworks -->
+  <section class="py-4 bg-light">
+    <div class="container">
+      <h2 class="section-title">You Might Also Like</h2>
+      <div class="row">
+        <!-- This would be populated dynamically in a real application -->
+        <div class="col-md-3 mb-4">
+          <div class="card h-100">
+            <div class="bg-secondary" style="height: 150px;"></div>
+            <div class="card-body">
+              <h5 class="card-title">Ocean Sunset</h5>
+              <p class="card-text text-muted">by Maria Rodriguez</p>
+              <p class="card-text"><strong>$175.00</strong></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <div class="card h-100">
+            <div class="bg-secondary" style="height: 150px;"></div>
+            <div class="card-body">
+              <h5 class="card-title">Forest Path</h5>
+              <p class="card-text text-muted">by John Davis</p>
+              <p class="card-text"><strong>$225.00</strong></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <div class="card h-100">
+            <div class="bg-secondary" style="height: 150px;"></div>
+            <div class="card-body">
+              <h5 class="card-title">Abstract Motion</h5>
+              <p class="card-text text-muted">by Sarah Johnson</p>
+              <p class="card-text"><strong>$300.00</strong></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <div class="card h-100">
+            <div class="bg-secondary" style="height: 150px;"></div>
+            <div class="card-body">
+              <h5 class="card-title">City Lights</h5>
+              <p class="card-text text-muted">by Michael Wong</p>
+              <p class="card-text"><strong>$250.00</strong></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>

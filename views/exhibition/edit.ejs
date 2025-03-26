@@ -1,0 +1,271 @@
+<!-- views/exhibitions/edit.ejs -->
+<section class="py-4">
+    <div class="container">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="/exhibitions">Exhibitions</a></li>
+          <li class="breadcrumb-item"><a href="/exhibitions/<%= exhibition._id %>"><%= exhibition.title %></a></li>
+          <li class="breadcrumb-item active" aria-current="page">Edit</li>
+        </ol>
+      </nav>
+      
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+              <h1 class="h3 mb-0">Edit Exhibition</h1>
+            </div>
+            <div class="card-body">
+              <form action="/exhibitions/<%= exhibition._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+                <!-- Basic Information -->
+                <div class="mb-4">
+                  <h2 class="h5 mb-3">Basic Information</h2>
+                  
+                  <div class="mb-3">
+                    <label for="title" class="form-label">Exhibition Title *</label>
+                    <input type="text" class="form-control" id="title" name="title" value="<%= exhibition.title %>" required maxlength="100">
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="description" class="form-label">Description *</label>
+                    <textarea class="form-control" id="description" name="description" rows="4" required><%= exhibition.description %></textarea>
+                    <div class="form-text">Provide a detailed description of your exhibition.</div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="startDate" class="form-label">Start Date *</label>
+                        <input type="date" class="form-control" id="startDate" name="startDate" 
+                               value="<%= exhibition.startDate.toISOString().split('T')[0] %>" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="endDate" class="form-label">End Date *</label>
+                        <input type="date" class="form-control" id="endDate" name="endDate" 
+                               value="<%= exhibition.endDate.toISOString().split('T')[0] %>" required>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Current Cover Image -->
+                  <div class="mb-3">
+                    <label class="form-label">Current Cover Image</label>
+                    <div class="text-center">
+                      <img src="/uploads/<%= exhibition.coverImage %>" alt="<%= exhibition.title %>" class="img-thumbnail" style="max-height: 200px;">
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="coverImage" class="form-label">Change Cover Image (optional)</label>
+                    <input class="form-control" type="file" id="coverImage" name="coverImage" accept="image/jpeg,image/png,image/gif">
+                    <div class="form-text">Upload a new image if you want to replace the current one. Supported formats: JPG, PNG, GIF. Max size: 5MB.</div>
+                    <div class="mt-3">
+                      <div id="imagePreview" class="d-none mt-2">
+                        <img src="" alt="Preview" class="img-thumbnail" style="max-height: 200px;">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Select Artworks -->
+                <div class="mb-4">
+                  <h2 class="h5 mb-3">Select Artworks</h2>
+                  
+                  <div class="mb-3">
+                    <p>Choose artworks from your collection to include in this exhibition:</p>
+                    
+                    <% if (artworks && artworks.length > 0) { %>
+                      <div class="row">
+                        <% artworks.forEach(artwork => { %>
+                          <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                              <img src="/uploads/<%= artwork.image %>" class="card-img-top" alt="<%= artwork.title %>" style="height: 120px; object-fit: cover;">
+                              <div class="card-body">
+                                <div class="form-check">
+                                  <input class="form-check-input" type="checkbox" name="artworkIds" 
+                                         value="<%= artwork._id %>" id="artwork<%= artwork._id %>"
+                                         <%= selectedArtworks.includes(artwork._id.toString()) ? 'checked' : '' %>>
+                                  <label class="form-check-label" for="artwork<%= artwork._id %>">
+                                    <%= artwork.title %>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        <% }); %>
+                      </div>
+                    <% } else { %>
+                      <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> You don't have any artworks yet.
+                        <a href="/artworks/create" class="alert-link">Create artwork</a> first before making an exhibition.
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+                
+                <!-- 3D Scene Configuration -->
+                <div class="mb-4">
+                  <h2 class="h5 mb-3">3D Scene Configuration</h2>
+                  
+                  <div class="mb-3">
+                    <label for="themeColor" class="form-label">Theme Color</label>
+                    <input type="color" class="form-control form-control-color" id="themeColor" name="themeColor" 
+                           value="<%= exhibition.sceneData.backgroundColor %>">
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="roomWidth" class="form-label">Room Width</label>
+                        <input type="number" class="form-control" id="roomWidth" name="roomWidth" 
+                               value="<%= exhibition.sceneData.roomWidth %>" min="10" max="50">
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="roomHeight" class="form-label">Room Height</label>
+                        <input type="number" class="form-control" id="roomHeight" name="roomHeight" 
+                               value="<%= exhibition.sceneData.roomHeight %>" min="3" max="10">
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="roomDepth" class="form-label">Room Depth</label>
+                        <input type="number" class="form-control" id="roomDepth" name="roomDepth" 
+                               value="<%= exhibition.sceneData.roomDepth %>" min="10" max="50">
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="wallColor" class="form-label">Wall Color</label>
+                        <input type="color" class="form-control form-control-color" id="wallColor" name="wallColor" 
+                               value="<%= exhibition.sceneData.wallColor %>">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="floorColor" class="form-label">Floor Color</label>
+                        <input type="color" class="form-control form-control-color" id="floorColor" name="floorColor" 
+                               value="<%= exhibition.sceneData.floorColor %>">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Publication Settings -->
+                <div class="mb-4">
+                  <h2 class="h5 mb-3">Publication Settings</h2>
+                  
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="isPublished" value="true" 
+                               id="isPublished" <%= exhibition.isPublished ? 'checked' : '' %>>
+                        <label class="form-check-label" for="isPublished">Publish exhibition</label>
+                      </div>
+                      <div class="form-text">If unchecked, the exhibition will be saved as a draft that only you can view.</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                  </button>
+                  <a href="/exhibitions/<%= exhibition._id %>" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4">
+          <div class="card shadow sticky-top" style="top: 20px; z-index: 10;">
+            <div class="card-header">
+              <h2 class="h5 mb-0">Exhibition Preview</h2>
+            </div>
+            <div class="card-body">
+              <p>Your exhibition is currently <%= exhibition.isPublished ? 'published' : 'not published' %>.</p>
+              <div class="d-grid gap-2">
+                <a href="/exhibitions/<%= exhibition._id %>" class="btn btn-outline-primary">
+                  <i class="fas fa-eye"></i> View Exhibition
+                </a>
+                <a href="/exhibitions/<%= exhibition._id %>/view3d" class="btn btn-outline-secondary">
+                  <i class="fas fa-cube"></i> Preview 3D View
+                </a>
+              </div>
+              
+              <hr>
+              
+              <h3 class="h6">Quick Tips</h3>
+              <ul class="list-unstyled small">
+                <li class="mb-2">
+                  <i class="fas fa-check-circle text-success me-1"></i>
+                  Add multiple artworks for a better experience
+                </li>
+                <li class="mb-2">
+                  <i class="fas fa-check-circle text-success me-1"></i>
+                  Adjust room dimensions to fit your artwork collection
+                </li>
+                <li>
+                  <i class="fas fa-check-circle text-success me-1"></i>
+                  Choose colors that complement your artwork
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Image Preview Script -->
+  <script>
+    document.getElementById('coverImage').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      const preview = document.getElementById('imagePreview');
+      const previewImg = preview.querySelector('img');
+      
+      if (file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          previewImg.src = e.target.result;
+          preview.classList.remove('d-none');
+        };
+        
+        reader.readAsDataURL(file);
+      } else {
+        preview.classList.add('d-none');
+      }
+    });
+    
+    // Validate start and end dates
+    document.getElementById('endDate').addEventListener('change', function() {
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(this.value);
+      
+      if (endDate <= startDate) {
+        alert('End date must be after start date.');
+        this.value = '<%= exhibition.endDate.toISOString().split('T')[0] %>';
+      }
+    });
+    
+    document.getElementById('startDate').addEventListener('change', function() {
+      const endDateInput = document.getElementById('endDate');
+      const startDate = new Date(this.value);
+      const endDate = new Date(endDateInput.value);
+      
+      if (endDate <= startDate) {
+        alert('End date must be after start date.');
+        this.value = '<%= exhibition.startDate.toISOString().split('T')[0] %>';
+      }
+    });
+  </script>

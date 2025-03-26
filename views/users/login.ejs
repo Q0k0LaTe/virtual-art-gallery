@@ -1,0 +1,40 @@
+<!-- views/users/login.ejs -->
+<section class="py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+          <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center py-3">
+              <h1 class="h3 mb-0">Login to Virtual Art Gallery</h1>
+            </div>
+            <div class="card-body p-4">
+              <form action="/users/login" method="POST">
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                <div class="mb-4">
+                  <label for="password" class="form-label">Password</label>
+                  <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                  </button>
+                </div>
+              </form>
+              
+              <hr class="my-4">
+              
+              <div class="text-center">
+                <p>Don't have an account?</p>
+                <a href="/users/register" class="btn btn-outline-primary">
+                  <i class="fas fa-user-plus"></i> Register Now
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>

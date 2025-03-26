@@ -1,6 +1,6 @@
-// services/apiService.js - Using ES modules
-import fetch from 'node-fetch';
-import dotenv from 'dotenv';
+// services/apiService.js - Using CommonJS
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const dotenv = require('dotenv');
 
 dotenv.config();
 
@@ -12,13 +12,23 @@ dotenv.config();
  * @param {Object} params - Query parameters
  * @returns {Promise<Object>} API response
  */
-export const getArtworks = async (params = {}) => {
+const getArtworks = async (params = {}) => {
   try {
     // Default parameters
     const defaultParams = {
       limit: 10,
       page: 1
     };
+
+// Export all functions 
+module.exports = {
+  getArtworks,
+  getArtworkById,
+  searchArtworks,
+  getWeather,
+  getForecast,
+  getArtRecommendations
+};
 
     // Merge default params with provided params
     const queryParams = { ...defaultParams, ...params };
@@ -66,7 +76,7 @@ export const getArtworks = async (params = {}) => {
  * @param {String} id - Artwork ID
  * @returns {Promise<Object>} Artwork details
  */
-export const getArtworkById = async (id) => {
+const getArtworkById = async (id) => {
   try {
     const response = await fetch(
       `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`
@@ -90,7 +100,7 @@ export const getArtworkById = async (id) => {
  * @param {Object} params - Additional query parameters
  * @returns {Promise<Object>} Search results
  */
-export const searchArtworks = async (query, params = {}) => {
+const searchArtworks = async (query, params = {}) => {
   try {
     // Default parameters
     const defaultParams = {
@@ -151,7 +161,7 @@ export const searchArtworks = async (query, params = {}) => {
  * @param {String} location - City name or location
  * @returns {Promise<Object>} Weather data
  */
-export const getWeather = async (location = 'New York') => {
+const getWeather = async (location = 'New York') => {
   try {
     const apiKey = process.env.WEATHER_API_KEY;
     
@@ -195,7 +205,7 @@ export const getWeather = async (location = 'New York') => {
  * @param {String} location - City name or location
  * @returns {Promise<Object>} Forecast data
  */
-export const getForecast = async (location = 'New York') => {
+const getForecast = async (location = 'New York') => {
   try {
     const apiKey = process.env.WEATHER_API_KEY;
     
@@ -226,7 +236,7 @@ export const getForecast = async (location = 'New York') => {
  * @param {String} weatherCondition - Current weather condition
  * @returns {Promise<Array>} List of recommended artworks
  */
-export const getArtRecommendations = async (weatherCondition) => {
+const getArtRecommendations = async (weatherCondition) => {
   try {
     // Map weather conditions to art moods/themes
     const moodMap = {
@@ -264,14 +274,4 @@ export const getArtRecommendations = async (weatherCondition) => {
     // Return empty array instead of throwing to avoid breaking the app
     return [];
   }
-};
-
-// Export all functions as a single object for CommonJS compatibility
-export default {
-  getArtworks,
-  getArtworkById,
-  searchArtworks,
-  getWeather,
-  getForecast,
-  getArtRecommendations
 };

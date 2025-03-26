@@ -1,0 +1,151 @@
+<!-- views/users/profile.ejs -->
+<section class="profile-header py-4">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-3 text-center mb-3 mb-md-0">
+          <img src="/uploads/<%= user.profileImage %>" alt="<%= user.name %>" class="profile-image">
+        </div>
+        <div class="col-md-9">
+          <h1 class="mb-2"><%= user.name %></h1>
+          <p class="text-muted mb-3"><%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %></p>
+          <% if (user.bio) { %>
+            <p><%= user.bio %></p>
+          <% } else { %>
+            <p class="text-muted"><em>No bio available</em></p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="py-4">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <div class="card shadow">
+            <div class="card-header">
+              <h2 class="h5 mb-0">Edit Profile</h2>
+            </div>
+            <div class="card-body">
+              <form action="/users/profile?_method=PUT" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                  <label for="name" class="form-label">Full Name</label>
+                  <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="bio" class="form-label">Bio</label>
+                  <textarea class="form-control" id="bio" name="bio" rows="4"><%= user.bio || '' %></textarea>
+                  <div class="form-text">Tell others about yourself and your work.</div>
+                </div>
+                
+                <div class="mb-4">
+                  <label for="profileImage" class="form-label">Profile Image</label>
+                  <input class="form-control" type="file" id="profileImage" name="profileImage" accept="image/jpeg,image/png,image/gif">
+                  <div class="form-text">Upload a new profile image (optional).</div>
+                  <div class="mt-3">
+                    <div id="imagePreview" class="d-none mt-2">
+                      <img src="" alt="Preview" class="img-thumbnail" style="max-height: 150px; max-width: 150px;">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-8">
+          <% if (user.role === 'artist') { %>
+            <div class="card shadow mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">My Artworks</h2>
+                <a href="/artworks/create" class="btn btn-sm btn-outline-primary">Add New</a>
+              </div>
+              <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                  <!-- This would be populated dynamically in a real application -->
+                  <div class="list-group-item py-3 text-center">
+                    <p class="text-muted mb-0">Your artworks will appear here once you add them.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card shadow">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">My Exhibitions</h2>
+                <a href="/exhibitions/create" class="btn btn-sm btn-outline-primary">Create New</a>
+              </div>
+              <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                  <!-- This would be populated dynamically in a real application -->
+                  <div class="list-group-item py-3 text-center">
+                    <p class="text-muted mb-0">Your exhibitions will appear here once you create them.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% } else { %>
+            <div class="card shadow mb-4">
+              <div class="card-header">
+                <h2 class="h5 mb-0">My Purchases</h2>
+              </div>
+              <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                  <!-- This would be populated dynamically in a real application -->
+                  <div class="list-group-item py-3 text-center">
+                    <p class="text-muted mb-0">Your purchased artworks will appear here.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer text-center">
+                <a href="/artworks" class="btn btn-primary">Browse Artworks</a>
+              </div>
+            </div>
+            
+            <div class="card shadow">
+              <div class="card-header">
+                <h2 class="h5 mb-0">Favorite Artists</h2>
+              </div>
+              <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                  <!-- This would be populated dynamically in a real application -->
+                  <div class="list-group-item py-3 text-center">
+                    <p class="text-muted mb-0">Your favorite artists will appear here.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Image Preview Script -->
+  <script>
+    document.getElementById('profileImage').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      const preview = document.getElementById('imagePreview');
+      const previewImg = preview.querySelector('img');
+      
+      if (file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          previewImg.src = e.target.result;
+          preview.classList.remove('d-none');
+        };
+        
+        reader.readAsDataURL(file);
+      } else {
+        preview.classList.add('d-none');
+      }
+    });
+  </script>

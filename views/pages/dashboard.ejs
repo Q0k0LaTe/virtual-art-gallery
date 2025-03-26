@@ -1,0 +1,366 @@
+<!-- views/pages/dashboard.ejs -->
+<section class="py-4">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Dashboard</h1>
+        <div>
+          <% if (user.role === 'artist' || user.role === 'admin') { %>
+            <a href="/artworks/create" class="btn btn-primary me-2">
+              <i class="fas fa-plus-circle"></i> Add Artwork
+            </a>
+            <a href="/exhibitions/create" class="btn btn-outline-primary">
+              <i class="fas fa-cubes"></i> Create Exhibition
+            </a>
+          <% } %>
+        </div>
+      </div>
+  
+      <!-- Stats Cards -->
+      <div class="row dashboard-stats">
+        <% if (user.role === 'artist' || user.role === 'admin') { %>
+          <div class="col-md-3 mb-4">
+            <div class="stat-card">
+              <div class="icon"><i class="fas fa-palette"></i></div>
+              <div class="count"><%= stats.totalArtworks %></div>
+              <div class="label">Artworks</div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <div class="stat-card">
+              <div class="icon"><i class="fas fa-cubes"></i></div>
+              <div class="count"><%= stats.totalExhibitions %></div>
+              <div class="label">Exhibitions</div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <div class="stat-card">
+              <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+              <div class="count"><%= stats.totalSales %></div>
+              <div class="label">Sales</div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <div class="stat-card">
+              <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+              <div class="count">$<%= stats.revenue.toFixed(2) %></div>
+              <div class="label">Revenue</div>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="col-md-6 mb-4">
+            <div class="stat-card">
+              <div class="icon"><i class="fas fa-shopping-cart"></i></div>
+              <div class="count"><%= stats.totalPurchases %></div>
+              <div class="label">Purchases</div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="stat-card">
+              <div class="icon"><i class="fas fa-heart"></i></div>
+              <div class="count">0</div>
+              <div class="label">Favorites</div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+  
+      <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+          <% if (user.role === 'artist' || user.role === 'admin') { %>
+            <!-- Artist's Artworks -->
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">My Artworks</h2>
+                <a href="/artworks/create" class="btn btn-sm btn-outline-primary">Add New</a>
+              </div>
+              <div class="card-body">
+                <% if (userArtworks && userArtworks.length > 0) { %>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th style="width: 80px">Image</th>
+                          <th>Title</th>
+                          <th>Category</th>
+                          <th>Price</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% userArtworks.forEach(artwork => { %>
+                          <tr>
+                            <td>
+                              <img src="/uploads/<%= artwork.image %>" alt="<%= artwork.title %>" class="img-thumbnail" width="60">
+                            </td>
+                            <td><%= artwork.title %></td>
+                            <td><%= artwork.category %></td>
+                            <td>$<%= artwork.price.toFixed(2) %></td>
+                            <td>
+                              <% if (artwork.forSale) { %>
+                                <span class="badge bg-success">For Sale</span>
+                              <% } else { %>
+                                <span class="badge bg-secondary">Not For Sale</span>
+                              <% } %>
+                            </td>
+                            <td>
+                              <a href="/artworks/<%= artwork._id %>" class="btn btn-sm btn-primary me-1">
+                                <i class="fas fa-eye"></i>
+                              </a>
+                              <a href="/artworks/<%= artwork._id %>/edit" class="btn btn-sm btn-secondary me-1">
+                                <i class="fas fa-edit"></i>
+                              </a>
+                              <form action="/artworks/<%= artwork._id %>?_method=DELETE" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this artwork?')">
+                                  <i class="fas fa-trash"></i>
+                                </button>
+                              </form>
+                            </td>
+                          </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </div>
+                  <% if (userArtworks.length > 5) { %>
+                    <div class="text-center mt-3">
+                      <a href="/artworks?artist=<%= user._id %>" class="btn btn-outline-primary">View All</a>
+                    </div>
+                  <% } %>
+                <% } else { %>
+                  <div class="text-center py-5">
+                    <i class="fas fa-palette fa-3x text-muted mb-3"></i>
+                    <p>You haven't created any artworks yet.</p>
+                    <a href="/artworks/create" class="btn btn-primary">Add Your First Artwork</a>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+  
+            <!-- Artist's Exhibitions -->
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">My Exhibitions</h2>
+                <a href="/exhibitions/create" class="btn btn-sm btn-outline-primary">Create New</a>
+              </div>
+              <div class="card-body">
+                <% if (userExhibitions && userExhibitions.length > 0) { %>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th style="width: 80px">Cover</th>
+                          <th>Title</th>
+                          <th>Dates</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% userExhibitions.forEach(exhibition => { %>
+                          <tr>
+                            <td>
+                              <img src="/uploads/<%= exhibition.coverImage %>" alt="<%= exhibition.title %>" class="img-thumbnail" width="60">
+                            </td>
+                            <td><%= exhibition.title %></td>
+                            <td>
+                              <%= new Date(exhibition.startDate).toLocaleDateString() %> - 
+                              <%= new Date(exhibition.endDate).toLocaleDateString() %>
+                            </td>
+                            <td>
+                              <% if (exhibition.isPublished) { %>
+                                <span class="badge bg-success">Published</span>
+                              <% } else { %>
+                                <span class="badge bg-warning text-dark">Draft</span>
+                              <% } %>
+                            </td>
+                            <td>
+                              <a href="/exhibitions/<%= exhibition._id %>" class="btn btn-sm btn-primary me-1">
+                                <i class="fas fa-eye"></i>
+                              </a>
+                              <a href="/exhibitions/<%= exhibition._id %>/view3d" class="btn btn-sm btn-info me-1">
+                                <i class="fas fa-cube"></i>
+                              </a>
+                              <a href="/exhibitions/<%= exhibition._id %>/edit" class="btn btn-sm btn-secondary me-1">
+                                <i class="fas fa-edit"></i>
+                              </a>
+                              <form action="/exhibitions/<%= exhibition._id %>?_method=DELETE" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this exhibition?')">
+                                  <i class="fas fa-trash"></i>
+                                </button>
+                              </form>
+                            </td>
+                          </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </div>
+                  <% if (userExhibitions.length > 5) { %>
+                    <div class="text-center mt-3">
+                      <a href="/exhibitions?curator=<%= user._id %>" class="btn btn-outline-primary">View All</a>
+                    </div>
+                  <% } %>
+                <% } else { %>
+                  <div class="text-center py-5">
+                    <i class="fas fa-cubes fa-3x text-muted mb-3"></i>
+                    <p>You haven't created any exhibitions yet.</p>
+                    <a href="/exhibitions/create" class="btn btn-primary">Create Your First Exhibition</a>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+  
+          <!-- Recent Sales (for Artists) -->
+          <% if (user.role === 'artist' || user.role === 'admin') { %>
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Recent Sales</h2>
+                <a href="/purchases/sales" class="btn btn-sm btn-outline-primary">View All</a>
+              </div>
+              <div class="card-body">
+                <% if (userSales && userSales.length > 0) { %>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th style="width: 80px">Artwork</th>
+                          <th>Title</th>
+                          <th>Buyer</th>
+                          <th>Price</th>
+                          <th>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% userSales.forEach(sale => { %>
+                          <tr>
+                            <td>
+                              <img src="/uploads/<%= sale.artwork.image %>" alt="<%= sale.artwork.title %>" class="img-thumbnail" width="60">
+                            </td>
+                            <td><%= sale.artwork.title %></td>
+                            <td><%= sale.buyer.name %></td>
+                            <td>$<%= sale.amount.toFixed(2) %></td>
+                            <td><%= new Date(sale.createdAt).toLocaleDateString() %></td>
+                          </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </div>
+                <% } else { %>
+                  <div class="text-center py-4">
+                    <i class="fas fa-dollar-sign fa-3x text-muted mb-3"></i>
+                    <p>You haven't made any sales yet.</p>
+                    <p class="text-muted">When your artworks sell, they will appear here.</p>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+  
+          <!-- Purchase History -->
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h2 class="h5 mb-0">Purchase History</h2>
+              <a href="/purchases/history" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+              <% if (userPurchases && userPurchases.length > 0) { %>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th style="width: 80px">Artwork</th>
+                        <th>Title</th>
+                        <th>Artist</th>
+                        <th>Price</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% userPurchases.forEach(purchase => { %>
+                        <tr>
+                          <td>
+                            <img src="/uploads/<%= purchase.artwork.image %>" alt="<%= purchase.artwork.title %>" class="img-thumbnail" width="60">
+                          </td>
+                          <td><%= purchase.artwork.title %></td>
+                          <td><%= purchase.seller.name %></td>
+                          <td>$<%= purchase.amount.toFixed(2) %></td>
+                          <td><%= new Date(purchase.createdAt).toLocaleDateString() %></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="text-center py-4">
+                  <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                  <p>You haven't purchased any artworks yet.</p>
+                  <a href="/artworks" class="btn btn-primary">Browse Artworks</a>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Right Column -->
+        <div class="col-lg-4">
+          <!-- User Profile Card -->
+          <div class="card mb-4">
+            <div class="card-body text-center">
+              <img src="/uploads/<%= user.profileImage %>" alt="<%= user.name %>" class="rounded-circle mb-3" width="120" height="120">
+              <h2 class="h4"><%= user.name %></h2>
+              <p class="text-muted"><%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %></p>
+              <% if (user.bio) { %>
+                <p><%= user.bio.substring(0, 100) %><%= user.bio.length > 100 ? '...' : '' %></p>
+              <% } %>
+              <a href="/users/profile" class="btn btn-outline-primary">Edit Profile</a>
+            </div>
+          </div>
+  
+          <!-- Recommended Artworks -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="h5 mb-0">Recommended For You</h2>
+            </div>
+            <div class="card-body p-0">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <div class="d-flex align-items-center">
+                    <img src="/uploads/default-artwork.jpg" alt="Recommended Artwork" class="img-thumbnail me-3" width="60">
+                    <div>
+                      <h3 class="h6 mb-0">Sunset at the Beach</h3>
+                      <p class="text-muted small mb-0">By Maria Rodriguez</p>
+                      <p class="mb-0">$250.00</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="d-flex align-items-center">
+                    <img src="/uploads/default-artwork.jpg" alt="Recommended Artwork" class="img-thumbnail me-3" width="60">
+                    <div>
+                      <h3 class="h6 mb-0">Abstract Composition</h3>
+                      <p class="text-muted small mb-0">By John Davis</p>
+                      <p class="mb-0">$350.00</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="d-flex align-items-center">
+                    <img src="/uploads/default-artwork.jpg" alt="Recommended Artwork" class="img-thumbnail me-3" width="60">
+                    <div>
+                      <h3 class="h6 mb-0">City Streets</h3>
+                      <p class="text-muted small mb-0">By Sarah Johnson</p>
+                      <p class="mb-0">$180.00</p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="card-footer text-center">
+              <a href="/artworks" class="btn btn-sm btn-outline-primary">Browse More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>

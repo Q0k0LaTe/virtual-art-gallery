@@ -1,0 +1,119 @@
+<!-- views/pages/search.ejs -->
+<section class="py-4">
+    <div class="container">
+      <h1 class="h2 mb-4">Search Results for "<%= query %>"</h1>
+      
+      <div class="row mb-4">
+        <div class="col-md-8">
+          <form action="/search" method="GET" class="d-flex">
+            <input type="text" name="query" class="form-control me-2" value="<%= query %>" placeholder="Search artworks, exhibitions, or artists...">
+            <select name="type" class="form-select me-2" style="max-width: 150px;">
+              <option value="all" <%= type === 'all' ? 'selected' : '' %>>All</option>
+              <option value="artworks" <%= type === 'artworks' ? 'selected' : '' %>>Artworks</option>
+              <option value="exhibitions" <%= type === 'exhibitions' ? 'selected' : '' %>>Exhibitions</option>
+              <option value="artists" <%= type === 'artists' ? 'selected' : '' %>>Artists</option>
+            </select>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-search"></i> Search
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <% if (!query) { %>
+        <div class="text-center py-5">
+          <i class="fas fa-search fa-3x text-muted mb-3"></i>
+          <p class="lead">Enter a search term to find artworks, exhibitions, and artists.</p>
+        </div>
+      <% } else { %>
+        <% if ((results.artworks && results.artworks.length > 0) || 
+               (results.exhibitions && results.exhibitions.length > 0) || 
+               (results.artists && results.artists.length > 0)) { %>
+          
+          <!-- Artworks Results -->
+          <% if ((type === 'all' || type === 'artworks') && results.artworks && results.artworks.length > 0) { %>
+            <h2 class="h4 mb-3">Artworks</h2>
+            <div class="row mb-5">
+              <% results.artworks.forEach(artwork => { %>
+                <div class="col-md-3 mb-4">
+                  <div class="card h-100">
+                    <img src="/uploads/<%= artwork.image %>" class="card-img-top" alt="<%= artwork.title %>" style="height: 180px; object-fit: cover;">
+                    <div class="card-body">
+                      <h5 class="card-title"><%= artwork.title %></h5>
+                      <p class="card-text text-muted">by <%= artwork.artist.name %></p>
+                      <p class="card-text"><strong>$<%= artwork.price.toFixed(2) %></strong></p>
+                      <a href="/artworks/<%= artwork._id %>" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } %>
+          
+          <!-- Exhibitions Results -->
+          <% if ((type === 'all' || type === 'exhibitions') && results.exhibitions && results.exhibitions.length > 0) { %>
+            <h2 class="h4 mb-3">Exhibitions</h2>
+            <div class="row mb-5">
+              <% results.exhibitions.forEach(exhibition => { %>
+                <div class="col-md-4 mb-4">
+                  <div class="card h-100">
+                    <img src="/uploads/<%= exhibition.coverImage %>" class="card-img-top" alt="<%= exhibition.title %>" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                      <h5 class="card-title"><%= exhibition.title %></h5>
+                      <p class="card-text text-muted">Curated by <%= exhibition.curator.name %></p>
+                      <p class="card-text">
+                        <small class="text-muted">
+                          <%= new Date(exhibition.startDate).toLocaleDateString() %> - 
+                          <%= new Date(exhibition.endDate).toLocaleDateString() %>
+                        </small>
+                      </p>
+                      <div class="d-flex">
+                        <a href="/exhibitions/<%= exhibition._id %>" class="btn btn-sm btn-outline-primary me-2">View Details</a>
+                        <a href="/exhibitions/<%= exhibition._id %>/view3d" class="btn btn-sm btn-outline-secondary">
+                          <i class="fas fa-cube"></i> 3D View
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } %>
+          
+          <!-- Artists Results -->
+          <% if ((type === 'all' || type === 'artists') && results.artists && results.artists.length > 0) { %>
+            <h2 class="h4 mb-3">Artists</h2>
+            <div class="row mb-5">
+              <% results.artists.forEach(artist => { %>
+                <div class="col-md-3 mb-4 text-center">
+                  <div class="card h-100 border-0">
+                    <div class="mx-auto mb-3">
+                      <img src="/uploads/<%= artist.profileImage %>" class="rounded-circle" alt="<%= artist.name %>" style="width: 120px; height: 120px; object-fit: cover;">
+                    </div>
+                    <div class="card-body">
+                      <h5 class="card-title"><%= artist.name %></h5>
+                      <% if (artist.bio) { %>
+                        <p class="card-text"><%= artist.bio.substring(0, 100) %>...</p>
+                      <% } %>
+                      <a href="/users/<%= artist._id %>" class="btn btn-sm btn-outline-primary">View Profile</a>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } %>
+          
+        <% } else { %>
+          <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <p class="lead">No results found for "<%= query %>"</p>
+            <p class="text-muted">Try using different keywords or browse our collections</p>
+            <div class="mt-4">
+              <a href="/artworks" class="btn btn-outline-primary me-2">Browse Artworks</a>
+              <a href="/exhibitions" class="btn btn-outline-secondary">Explore Exhibitions</a>
+            </div>
+          </div>
+        <% } %>
+      <% } %>
+    </div>
+  </section>

@@ -1,0 +1,148 @@
+<!-- views/artworks/create.ejs -->
+<section class="py-4">
+    <div class="container">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="/artworks">Artworks</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Create New Artwork</li>
+        </ol>
+      </nav>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+              <h1 class="h3 mb-0">Create New Artwork</h1>
+            </div>
+            <div class="card-body">
+              <form action="/artworks" method="POST" enctype="multipart/form-data">
+                <!-- Title -->
+                <div class="mb-3">
+                  <label for="title" class="form-label">Title *</label>
+                  <input type="text" class="form-control" id="title" name="title" required maxlength="100">
+                </div>
+                
+                <!-- Description -->
+                <div class="mb-3">
+                  <label for="description" class="form-label">Description *</label>
+                  <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+                  <div class="form-text">Provide a detailed description of your artwork.</div>
+                </div>
+                
+                <!-- Category -->
+                <div class="mb-3">
+                  <label for="category" class="form-label">Category *</label>
+                  <select class="form-select" id="category" name="category" required>
+                    <option value="" selected disabled>Select a category</option>
+                    <option value="Painting">Painting</option>
+                    <option value="Sculpture">Sculpture</option>
+                    <option value="Photography">Photography</option>
+                    <option value="Digital">Digital</option>
+                    <option value="Mixed Media">Mixed Media</option>
+                    <option value="Installation">Installation</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                
+                <!-- Price -->
+                <div class="mb-3">
+                  <label for="price" class="form-label">Price (USD) *</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="price" name="price" min="0" step="0.01" required>
+                  </div>
+                </div>
+                
+                <!-- For Sale -->
+                <div class="mb-4">
+                  <label class="form-label d-block">For Sale *</label>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="forSale" id="forSaleYes" value="true" checked>
+                    <label class="form-check-label" for="forSaleYes">Yes</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="forSale" id="forSaleNo" value="false">
+                    <label class="form-check-label" for="forSaleNo">No</label>
+                  </div>
+                </div>
+                
+                <!-- Dimensions -->
+                <div class="card mb-4">
+                  <div class="card-header">
+                    <h2 class="h5 mb-0">Dimensions</h2>
+                  </div>
+                  <div class="card-body">
+                    <div class="row g-3">
+                      <div class="col-md-3">
+                        <label for="width" class="form-label">Width</label>
+                        <input type="number" class="form-control" id="width" name="width" min="0" step="0.01">
+                      </div>
+                      <div class="col-md-3">
+                        <label for="height" class="form-label">Height</label>
+                        <input type="number" class="form-control" id="height" name="height" min="0" step="0.01">
+                      </div>
+                      <div class="col-md-3">
+                        <label for="depth" class="form-label">Depth</label>
+                        <input type="number" class="form-control" id="depth" name="depth" min="0" step="0.01">
+                      </div>
+                      <div class="col-md-3">
+                        <label for="unit" class="form-label">Unit</label>
+                        <select class="form-select" id="unit" name="unit">
+                          <option value="cm">cm</option>
+                          <option value="in">in</option>
+                          <option value="px">px</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Image Upload -->
+                <div class="mb-4">
+                  <label for="image" class="form-label">Artwork Image *</label>
+                  <input class="form-control" type="file" id="image" name="image" accept="image/jpeg,image/png,image/gif" required>
+                  <div class="form-text">Upload a high-quality image of your artwork. Supported formats: JPG, PNG, GIF. Max size: 5MB.</div>
+                  <div class="mt-3">
+                    <div id="imagePreview" class="d-none mt-2">
+                      <img src="" alt="Preview" class="img-thumbnail" style="max-height: 300px;">
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Create Artwork
+                  </button>
+                  <a href="/dashboard" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Image Preview Script -->
+  <script>
+    document.getElementById('image').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      const preview = document.getElementById('imagePreview');
+      const previewImg = preview.querySelector('img');
+      
+      if (file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          previewImg.src = e.target.result;
+          preview.classList.remove('d-none');
+        };
+        
+        reader.readAsDataURL(file);
+      } else {
+        preview.classList.add('d-none');
+      }
+    });
+  </script>
