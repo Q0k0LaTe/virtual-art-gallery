@@ -62,9 +62,8 @@
               <% artRecommendations.slice(0, 4).forEach(art => { %>
                 <div class="col-md-6 mb-3">
                   <div class="card h-100">
-                    <% const imageId = art.image_id; %>
-                    <% if (imageId) { %>
-                      <img src="https://www.artic.edu/iiif/2/<%= imageId %>/full/400,/0/default.jpg" 
+                    <% if (art.image_id) { %>
+                      <img src="<%= art.image_id %>" 
                            class="card-img-top" alt="<%= art.title %>">
                     <% } else { %>
                       <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
@@ -74,7 +73,7 @@
                     <div class="card-body">
                       <h5 class="card-title"><%= art.title %></h5>
                       <p class="card-text text-muted"><%= art.artist_display %></p>
-                      <a href="https://www.artic.edu/artworks/<%= art.id %>" target="_blank" class="btn btn-sm btn-outline-primary">View at Art Institute</a>
+                      <a href="https://www.metmuseum.org/art/collection/search/<%= art.id %>" target="_blank" class="btn btn-sm btn-outline-primary">View at Metropolitan Museum</a>
                     </div>
                   </div>
                 </div>
