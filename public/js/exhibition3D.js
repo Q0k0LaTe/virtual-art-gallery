@@ -2,12 +2,13 @@
 let scene, camera, renderer, controls;
 let artworks = [];
 let wallMeshes = [];
+let originalCameraPosition;
 
 // Initialize the 3D scene
 function init(exhibitionData) {
   // Create scene
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(exhibitionData.backgroundColor || '#f0f0f0');
+  scene.background = new THREE.Color(exhibitionData.sceneData.backgroundColor || '#f0f0f0');
 
   // Create camera
   camera = new THREE.PerspectiveCamera(
@@ -17,12 +18,14 @@ function init(exhibitionData) {
     1000
   );
   camera.position.set(0, 1.6, 5); // Position camera at eye level
+  originalCameraPosition = camera.position.clone();
 
   // Create renderer
+  const container = document.getElementById('exhibition-container');
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8);
+  renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.shadowMap.enabled = true;
-  document.getElementById('exhibition-container').appendChild(renderer.domElement);
+  container.appendChild(renderer.domElement);
 
   // Add orbit controls
   controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -41,7 +44,7 @@ function init(exhibitionData) {
   scene.add(directionalLight);
 
   // Create gallery room
-  createGalleryRoom(exhibitionData);
+  createGalleryRoom(exhibitionData.sceneData);
 
   // Load artwork textures and create artwork planes
   loadArtworks(exhibitionData.artworks);
@@ -54,15 +57,15 @@ function init(exhibitionData) {
 }
 
 // Create gallery walls and floor
-function createGalleryRoom(exhibitionData) {
-  const roomWidth = exhibitionData.roomWidth || 20;
-  const roomHeight = exhibitionData.roomHeight || 4;
-  const roomDepth = exhibitionData.roomDepth || 20;
+function createGalleryRoom(sceneData) {
+  const roomWidth = sceneData.roomWidth || 20;
+  const roomHeight = sceneData.roomHeight || 4;
+  const roomDepth = sceneData.roomDepth || 20;
 
   // Floor
   const floorGeometry = new THREE.PlaneGeometry(roomWidth, roomDepth);
   const floorMaterial = new THREE.MeshStandardMaterial({
-    color: exhibitionData.floorColor || 0xaaaaaa,
+    color: sceneData.floorColor || 0xaaaaaa,
     roughness: 0.8,
     metalness: 0.2
   });
@@ -73,7 +76,7 @@ function createGalleryRoom(exhibitionData) {
 
   // Create walls
   const wallMaterial = new THREE.MeshStandardMaterial({
-    color: exhibitionData.wallColor || 0xffffff,
+    color: sceneData.wallColor || 0xffffff,
     roughness: 0.9,
     metalness: 0.1
   });
@@ -125,7 +128,7 @@ function loadArtworks(artworksData) {
     textureLoader.load(imageUrl, function(texture) {
       // Calculate aspect ratio to maintain proper dimensions
       const aspectRatio = texture.image.width / texture.image.height;
-      const width = artwork.width || 1.5;
+      const width = 1.5;
       const height = width / aspectRatio;
 
       // Create material with artwork texture
@@ -225,9 +228,10 @@ function calculateWallPositions(artworkCount) {
 
 // Handle window resize
 function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  const container = document.getElementById('exhibition-container');
+  camera.aspect = container.clientWidth / container.clientHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8);
+  renderer.setSize(container.clientWidth, container.clientHeight);
 }
 
 // Animation loop
@@ -242,7 +246,7 @@ function setupInteraction() {
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   
-  window.addEventListener('click', function(event) {
+  renderer.domElement.addEventListener('click', function(event) {
     // Calculate mouse position in normalized device coordinates
     const containerRect = renderer.domElement.getBoundingClientRect();
     mouse.x = ((event.clientX - containerRect.left) / containerRect.width) * 2 - 1;
@@ -252,18 +256,19 @@ function setupInteraction() {
     raycaster.setFromCamera(mouse, camera);
     
     // Check for intersections with artworks
-    const intersects = raycaster.intersectObjects(artworks, true);
+    const intersects = raycaster.intersectObjects(scene.children, true);
     
     if (intersects.length > 0) {
       // Find the parent group (artwork)
       let artworkGroup = intersects[0].object;
-      while (artworkGroup.parent !== scene) {
+      while (artworkGroup.parent && artworkGroup.parent !== scene) {
         artworkGroup = artworkGroup.parent;
       }
       
-      // Display artwork information
-      const userData = artworkGroup.userData;
-      showArtworkDetails(userData);
+      // Display artwork information if this is an artwork
+      if (artworkGroup.userData && artworkGroup.userData.id) {
+        showArtworkDetails(artworkGroup.userData);
+      }
     }
   });
 }
@@ -272,19 +277,40 @@ function setupInteraction() {
 function showArtworkDetails(artwork) {
   const detailsElement = document.getElementById('artwork-details');
   
-  detailsElement.innerHTML = `
-    <h3>${artwork.title}</h3>
-    <p>Artist: ${artwork.artist}</p>
-    <p>${artwork.description}</p>
-    <p>Price: ${artwork.price}</p>
-    <a href="/artworks/${artwork.id}" class="btn btn-primary">View Details</a>
-  `;
-  
-  detailsElement.style.display = 'block';
+  if (detailsElement) {
+    detailsElement.innerHTML = `
+      <button type="button" class="btn-close float-end" onclick="document.getElementById('artwork-details').style.display='none'"></button>
+      <div id="artwork-content">
+        <h3>${artwork.title}</h3>
+        <p><strong>Artist:</strong> ${artwork.artist}</p>
+        <p>${artwork.description}</p>
+        <p><strong>Price:</strong> $${artwork.price ? artwork.price.toFixed(2) : 'N/A'}</p>
+        <a href="/artworks/${artwork.id}" class="btn btn-primary">View Details</a>
+      </div>
+    `;
+    
+    detailsElement.style.display = 'block';
+  }
+}
+
+// Get camera for external controls
+function getCamera() {
+  return camera;
+}
+
+// Reset camera to original position
+function resetCamera() {
+  if (originalCameraPosition) {
+    camera.position.copy(originalCameraPosition);
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }
 }
 
 // Export functions for use in exhibition view
 window.Exhibition3D = {
   init,
-  setupInteraction
+  setupInteraction,
+  getCamera,
+  resetCamera
 };

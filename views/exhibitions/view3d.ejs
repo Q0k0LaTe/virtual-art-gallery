@@ -1,79 +1,137 @@
 <!-- views/exhibitions/view3d.ejs -->
-<div class="container-fluid p-0">
-    <div class="exhibition-header bg-dark text-white p-4">
-      <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
-          <h1><%= exhibition.title %></h1>
-          <a href="/exhibitions/<%= exhibition._id %>" class="btn btn-outline-light">Exit 3D View</a>
-        </div>
-        <p class="mb-0">Curated by <%= exhibition.curator.name %></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= exhibition.title %> | 3D View</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <!-- Custom CSS -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    #exhibition-container {
+      width: 100%;
+      height: 600px;
+      background-color: #f8f9fa;
+    }
+    .artwork-details {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 300px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 100;
+    }
+    .exhibition-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background-color: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 100;
+    }
+    .header-section {
+      background-color: #343a40;
+      color: white;
+      padding: 15px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header-section">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h3"><%= exhibition.title %></h1>
+        <a href="/exhibitions/<%= exhibition._id %>" class="btn btn-outline-light">Exit 3D View</a>
       </div>
+      <p class="mb-0">Curated by <%= exhibition.curator.name %></p>
     </div>
-  
-    <div class="position-relative">
-      <!-- 3D Container -->
-      <div id="exhibition-container" class="w-100" style="height: 80vh;"></div>
-      
-      <!-- Artwork Details Panel -->
-      <div id="artwork-details" class="artwork-details">
-        <button type="button" class="btn-close float-end" onclick="document.getElementById('artwork-details').style.display='none'"></button>
-        <div id="artwork-content">
-          <h3>Select an artwork</h3>
-          <p>Click on any artwork in the exhibition to view details.</p>
-        </div>
-      </div>
-      
-      <!-- Controls Panel -->
-      <div class="exhibition-controls">
-        <button class="btn btn-sm btn-light me-2" id="zoom-in"><i class="fas fa-search-plus"></i> Zoom In</button>
-        <button class="btn btn-sm btn-light me-2" id="zoom-out"><i class="fas fa-search-minus"></i> Zoom Out</button>
-        <button class="btn btn-sm btn-light" id="reset-camera"><i class="fas fa-sync"></i> Reset View</button>
-      </div>
-    </div>
-  
-    <div class="container mt-4">
-      <div class="row">
-        <div class="col-md-8">
-          <div class="card mb-4">
-            <div class="card-body">
-              <h3>About This Exhibition</h3>
-              <p><%= exhibition.description %></p>
-              <p>
-                <strong>Dates:</strong> 
-                <%= new Date(exhibition.startDate).toLocaleDateString() %> - 
-                <%= new Date(exhibition.endDate).toLocaleDateString() %>
-              </p>
-            </div>
+  </div>
+
+  <!-- Info Cards -->
+  <div class="container my-4">
+    <div class="row">
+      <div class="col-md-8">
+        <div class="card mb-3">
+          <div class="card-body">
+            <h3 class="h5">About This Exhibition</h3>
+            <p><%= exhibition.description %></p>
+            <p>
+              <strong>Dates:</strong> 
+              <%= new Date(exhibition.startDate).toLocaleDateString() %> - 
+              <%= new Date(exhibition.endDate).toLocaleDateString() %>
+            </p>
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="card">
-            <div class="card-body">
-              <h3>Featured Artworks</h3>
-              <ul class="list-group list-group-flush">
-                <% if (exhibition.artworks && exhibition.artworks.length > 0) { %>
-                  <% exhibition.artworks.forEach(artwork => { %>
-                    <li class="list-group-item">
-                      <a href="/artworks/<%= artwork._id %>" class="text-decoration-none">
-                        <%= artwork.title %> by <%= artwork.artist.name %>
-                      </a>
-                    </li>
-                  <% }); %>
-                <% } else { %>
-                  <li class="list-group-item">No artworks in this exhibition.</li>
-                <% } %>
-              </ul>
-            </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="card-body">
+            <h3 class="h5">Featured Artworks</h3>
+            <ul class="list-group list-group-flush">
+              <% if (exhibition.artworks && exhibition.artworks.length > 0) { %>
+                <% exhibition.artworks.forEach(artwork => { %>
+                  <li class="list-group-item p-2">
+                    <a href="/artworks/<%= artwork._id %>" class="text-decoration-none">
+                      <%= artwork.title %> by <%= artwork.artist.name %>
+                    </a>
+                  </li>
+                <% }); %>
+              <% } else { %>
+                <li class="list-group-item">No artworks in this exhibition.</li>
+              <% } %>
+            </ul>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- 3D Viewer Container -->
+  <div class="container mb-4">
+    <div class="card">
+      <div class="card-body p-0 position-relative">
+        <div id="exhibition-container"></div>
+        
+        <!-- Artwork Details Panel -->
+        <div id="artwork-details" class="artwork-details">
+          <button type="button" class="btn-close float-end" onclick="document.getElementById('artwork-details').style.display='none'"></button>
+          <div id="artwork-content">
+            <h4>Select an artwork</h4>
+            <p>Click on any artwork in the exhibition to view details.</p>
+          </div>
+        </div>
+        
+        <!-- Controls Panel -->
+        <div class="exhibition-controls">
+          <button class="btn btn-sm btn-light me-2" id="zoom-in"><i class="fas fa-search-plus"></i> Zoom In</button>
+          <button class="btn btn-sm btn-light me-2" id="zoom-out"><i class="fas fa-search-minus"></i> Zoom Out</button>
+          <button class="btn btn-sm btn-light" id="reset-camera"><i class="fas fa-sync"></i> Reset View</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/examples/js/controls/OrbitControls.js"></script>
   
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  
-  <!-- Pass exhibition data to JavaScript -->
+  <!-- Exhibition Data -->
   <script>
     // Convert exhibition data to JSON and pass to Three.js
     const exhibitionData = <%- JSON.stringify({
@@ -92,35 +150,333 @@
         }
       }))
     }) %>;
+    console.log("Exhibition data loaded:", exhibitionData);
   </script>
-  
-  <!-- Three.js Main Script -->
-  <script src="/js/exhibition3D.js"></script>
-  
-  <!-- Initialize 3D Scene -->
+
+  <!-- Simple Three.js implementation -->
   <script>
+    // Global variables
+    let scene, camera, renderer, controls;
+    let artworks = [];
+    let wallMeshes = [];
+    let originalCameraPosition;
+
+    // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize 3D scene with exhibition data
-      window.Exhibition3D.init(exhibitionData);
-      window.Exhibition3D.setupInteraction();
+      initThreeJS();
+      setupInteraction();
+      setupControls();
+    });
+
+    // Initialize Three.js scene
+    function initThreeJS() {
+      console.log("Initializing Three.js scene...");
       
-      // Control buttons
+      // Create scene
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(exhibitionData.sceneData.backgroundColor || '#f0f0f0');
+      
+      // Create camera
+      camera = new THREE.PerspectiveCamera(
+        75,
+        document.getElementById('exhibition-container').clientWidth / 
+        document.getElementById('exhibition-container').clientHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(0, 1.6, 5);
+      originalCameraPosition = camera.position.clone();
+      
+      // Create renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(
+        document.getElementById('exhibition-container').clientWidth,
+        document.getElementById('exhibition-container').clientHeight
+      );
+      document.getElementById('exhibition-container').appendChild(renderer.domElement);
+      
+      // Add orbit controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      
+      // Add lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      scene.add(ambientLight);
+      
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(5, 10, 7.5);
+      scene.add(directionalLight);
+      
+      // Create room
+      createRoom();
+      
+      // Load artworks
+      loadArtworks();
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        camera.aspect = document.getElementById('exhibition-container').clientWidth / 
+                        document.getElementById('exhibition-container').clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(
+          document.getElementById('exhibition-container').clientWidth,
+          document.getElementById('exhibition-container').clientHeight
+        );
+      });
+      
+      // Start animation loop
+      animate();
+      
+      console.log("Three.js scene initialized");
+    }
+
+    // Create gallery room
+    function createRoom() {
+      const roomWidth = exhibitionData.sceneData.roomWidth || 20;
+      const roomHeight = exhibitionData.sceneData.roomHeight || 4;
+      const roomDepth = exhibitionData.sceneData.roomDepth || 20;
+      const wallColor = exhibitionData.sceneData.wallColor || '#ffffff';
+      const floorColor = exhibitionData.sceneData.floorColor || '#aaaaaa';
+      
+      // Floor
+      const floorGeometry = new THREE.PlaneGeometry(roomWidth, roomDepth);
+      const floorMaterial = new THREE.MeshStandardMaterial({
+        color: floorColor,
+        roughness: 0.8
+      });
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = 0;
+      scene.add(floor);
+      
+      // Create walls
+      const wallMaterial = new THREE.MeshStandardMaterial({
+        color: wallColor,
+        roughness: 0.9
+      });
+      
+      // Back wall
+      const backWall = new THREE.Mesh(
+        new THREE.PlaneGeometry(roomWidth, roomHeight),
+        wallMaterial
+      );
+      backWall.position.set(0, roomHeight / 2, -roomDepth / 2);
+      scene.add(backWall);
+      wallMeshes.push(backWall);
+      
+      // Front wall
+      const frontWall = new THREE.Mesh(
+        new THREE.PlaneGeometry(roomWidth, roomHeight),
+        wallMaterial
+      );
+      frontWall.position.set(0, roomHeight / 2, roomDepth / 2);
+      frontWall.rotation.y = Math.PI;
+      scene.add(frontWall);
+      wallMeshes.push(frontWall);
+      
+      // Left wall
+      const leftWall = new THREE.Mesh(
+        new THREE.PlaneGeometry(roomDepth, roomHeight),
+        wallMaterial
+      );
+      leftWall.position.set(-roomWidth / 2, roomHeight / 2, 0);
+      leftWall.rotation.y = Math.PI / 2;
+      scene.add(leftWall);
+      wallMeshes.push(leftWall);
+      
+      // Right wall
+      const rightWall = new THREE.Mesh(
+        new THREE.PlaneGeometry(roomDepth, roomHeight),
+        wallMaterial
+      );
+      rightWall.position.set(roomWidth / 2, roomHeight / 2, 0);
+      rightWall.rotation.y = -Math.PI / 2;
+      scene.add(rightWall);
+      wallMeshes.push(rightWall);
+    }
+
+    // Load artworks
+    function loadArtworks() {
+      if (!exhibitionData.artworks || exhibitionData.artworks.length === 0) {
+        console.log("No artworks to display");
+        return;
+      }
+      
+      console.log("Loading artworks...");
+      const textureLoader = new THREE.TextureLoader();
+      const wallPositions = calculateWallPositions(exhibitionData.artworks.length);
+      
+      exhibitionData.artworks.forEach((artwork, index) => {
+        const imageUrl = `/uploads/${artwork.image}`;
+        console.log(`Loading artwork: ${artwork.title} from ${imageUrl}`);
+        
+        textureLoader.load(
+          imageUrl,
+          // Success callback
+          function(texture) {
+            console.log(`Successfully loaded texture for: ${artwork.title}`);
+            const aspectRatio = texture.image.width / texture.image.height;
+            const width = 1.5;
+            const height = width / aspectRatio;
+            
+            // Create frame
+            const frameGeometry = new THREE.BoxGeometry(width + 0.1, height + 0.1, 0.05);
+            const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            
+            // Create artwork
+            const artGeometry = new THREE.PlaneGeometry(width, height);
+            const artMaterial = new THREE.MeshStandardMaterial({ 
+              map: texture,
+              side: THREE.DoubleSide
+            });
+            const art = new THREE.Mesh(artGeometry, artMaterial);
+            art.position.z = 0.026; // Slightly in front of frame
+            
+            // Group them
+            const artworkGroup = new THREE.Group();
+            artworkGroup.add(frame);
+            artworkGroup.add(art);
+            
+            // Position on wall
+            const position = wallPositions[index];
+            artworkGroup.position.set(position.x, position.y, position.z);
+            artworkGroup.rotation.y = position.rotation;
+            
+            // Add metadata
+            artworkGroup.userData = {
+              id: artwork._id,
+              title: artwork.title,
+              artist: artwork.artist.name,
+              description: artwork.description,
+              price: artwork.price
+            };
+            
+            // Add to scene
+            scene.add(artworkGroup);
+            artworks.push(artworkGroup);
+          },
+          // Progress callback
+          undefined,
+          // Error callback
+          function(error) {
+            console.error(`Error loading artwork: ${artwork.title}`, error);
+          }
+        );
+      });
+    }
+
+    // Calculate positions for artworks
+    function calculateWallPositions(artworkCount) {
+      const positions = [];
+      const artworksPerWall = Math.ceil(artworkCount / 4); // 4 walls
+      
+      wallMeshes.forEach((wall, wallIndex) => {
+        const wallWidth = wall.geometry.parameters.width;
+        const wallHeight = wall.geometry.parameters.height;
+        const spacing = wallWidth / (artworksPerWall + 1);
+        
+        for (let i = 0; i < artworksPerWall; i++) {
+          if (positions.length >= artworkCount) break;
+          
+          const wallDirection = new THREE.Vector3(0, 0, -1);
+          wallDirection.applyQuaternion(wall.quaternion);
+          
+          const x = wall.position.x + ((i + 1) * spacing - wallWidth / 2) * -wallDirection.z;
+          const y = wallHeight / 2;
+          const z = wall.position.z + ((i + 1) * spacing - wallWidth / 2) * wallDirection.x;
+          
+          positions.push({
+            x: x,
+            y: y,
+            z: z,
+            rotation: wall.rotation.y + Math.PI
+          });
+        }
+      });
+      
+      return positions;
+    }
+
+    // Setup interaction to show artwork details
+    function setupInteraction() {
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+      
+      renderer.domElement.addEventListener('click', function(event) {
+        // Calculate mouse position in normalized device coordinates
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        
+        // Update the raycaster
+        raycaster.setFromCamera(mouse, camera);
+        
+        // Find intersecting objects
+        const intersects = raycaster.intersectObjects(scene.children, true);
+        
+        if (intersects.length > 0) {
+          let object = intersects[0].object;
+          
+          // Find the parent group (the artwork)
+          while (object.parent && object.parent !== scene) {
+            object = object.parent;
+          }
+          
+          // Show details if this is an artwork
+          if (object.userData && object.userData.id) {
+            showArtworkDetails(object.userData);
+          }
+        }
+      });
+    }
+
+    // Show artwork details in the UI
+    function showArtworkDetails(artwork) {
+      const detailsPanel = document.getElementById('artwork-details');
+      const detailsContent = document.getElementById('artwork-content');
+      
+      detailsContent.innerHTML = `
+        <h4>${artwork.title}</h4>
+        <p><strong>Artist:</strong> ${artwork.artist}</p>
+        <p>${artwork.description}</p>
+        <p><strong>Price:</strong> $${artwork.price ? artwork.price.toFixed(2) : 'N/A'}</p>
+        <a href="/artworks/${artwork.id}" class="btn btn-primary btn-sm">View Details</a>
+      `;
+      
+      detailsPanel.style.display = 'block';
+    }
+
+    // Setup controls for the camera
+    function setupControls() {
       document.getElementById('zoom-in').addEventListener('click', function() {
-        const camera = window.Exhibition3D.getCamera();
         if (camera.position.z > 2) {
           camera.position.z -= 1;
         }
       });
       
       document.getElementById('zoom-out').addEventListener('click', function() {
-        const camera = window.Exhibition3D.getCamera();
         if (camera.position.z < 20) {
           camera.position.z += 1;
         }
       });
       
       document.getElementById('reset-camera').addEventListener('click', function() {
-        window.Exhibition3D.resetCamera();
+        if (originalCameraPosition) {
+          camera.position.copy(originalCameraPosition);
+          controls.target.set(0, 0, 0);
+          controls.update();
+        }
       });
-    });
+    }
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
   </script>
+</body>
+</html>
