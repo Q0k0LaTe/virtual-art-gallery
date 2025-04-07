@@ -13,8 +13,10 @@ const ArtworkSchema = new mongoose.Schema({
     required: [true, 'Please add a description']
   },
   image: {
-    type: String,
-    required: [true, 'Please upload an image']
+    type: String
+  },
+  imageUrl: {
+    type: String
   },
   category: {
     type: String,
@@ -62,6 +64,14 @@ const ArtworkSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+});
+
+// Add custom validation to ensure at least one image source is provided
+ArtworkSchema.pre('validate', function(next) {
+  if (!this.image && !this.imageUrl) {
+    this.invalidate('image', 'Please provide either an image file or URL');
+  }
+  next();
 });
 
 module.exports = mongoose.model('Artwork', ArtworkSchema);

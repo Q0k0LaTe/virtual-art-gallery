@@ -485,6 +485,8 @@
         if (!imageUrl.startsWith('http')) {
           imageUrl = `/uploads/${artwork.image}`;
         }
+
+        const imageUrl = artwork.imageUrl || `/uploads/${artwork.image}`;
         
         console.log(`Loading artwork: ${artwork.title} from ${imageUrl}`);
         

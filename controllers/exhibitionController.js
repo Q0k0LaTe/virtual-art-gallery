@@ -99,11 +99,13 @@ exports.createExhibition = async (req, res) => {
       roomDepth,
       wallColor,
       floorColor,
-      isPublished 
+      isPublished,
+      coverImageUrl
     } = req.body;
     
-    if (!req.file) {
-      req.flash('error_msg', 'Please upload a cover image');
+    // Check if at least one image source is provided (file upload or URL)
+    if (!req.file && !coverImageUrl) {
+      req.flash('error_msg', 'Please provide either an image upload or an image URL');
       return res.redirect('/exhibitions/create');
     }
     
@@ -122,10 +124,10 @@ exports.createExhibition = async (req, res) => {
       floorColor: floorColor || '#aaaaaa'
     };
     
-    const exhibition = await Exhibition.create({
+    // Create exhibition data
+    const exhibitionData = {
       title,
       description,
-      coverImage: req.file.filename,
       startDate,
       endDate,
       artworks,
@@ -133,7 +135,16 @@ exports.createExhibition = async (req, res) => {
       sceneData,
       curator: req.user.id,
       isPublished: isPublished === 'true'
-    });
+    };
+    
+    // Set the image source (either file upload or URL)
+    if (req.file) {
+      exhibitionData.coverImage = req.file.filename;
+    } else if (coverImageUrl) {
+      exhibitionData.coverImageUrl = coverImageUrl;
+    }
+    
+    const exhibition = await Exhibition.create(exhibitionData);
     
     req.flash('success_msg', 'Exhibition created successfully');
     res.redirect(`/exhibitions/${exhibition._id}/edit`);
@@ -195,7 +206,8 @@ exports.updateExhibition = async (req, res) => {
       roomDepth,
       wallColor,
       floorColor,
-      isPublished 
+      isPublished,
+      coverImageUrl
     } = req.body;
     
     const exhibition = await Exhibition.findById(req.params.id);
@@ -249,14 +261,30 @@ exports.updateExhibition = async (req, res) => {
     // Update published status
     exhibition.isPublished = isPublished === 'true';
     
-    // Update cover image if provided
+    // Update cover image if file is provided
     if (req.file) {
-      // Delete previous image
-      const previousImage = path.join(__dirname, '../public/uploads/', exhibition.coverImage);
-      if (fs.existsSync(previousImage)) {
-        fs.unlinkSync(previousImage);
+      // Delete previous image if it exists
+      if (exhibition.coverImage) {
+        const previousImage = path.join(__dirname, '../public/uploads/', exhibition.coverImage);
+        if (fs.existsSync(previousImage)) {
+          fs.unlinkSync(previousImage);
+        }
       }
       exhibition.coverImage = req.file.filename;
+      exhibition.coverImageUrl = null; // Clear URL if file is uploaded
+    } 
+    // Update cover image URL if provided
+    else if (coverImageUrl) {
+      exhibition.coverImageUrl = coverImageUrl;
+      
+      // Delete previous uploaded image if switching to URL
+      if (exhibition.coverImage) {
+        const previousImage = path.join(__dirname, '../public/uploads/', exhibition.coverImage);
+        if (fs.existsSync(previousImage)) {
+          fs.unlinkSync(previousImage);
+        }
+        exhibition.coverImage = null;
+      }
     }
     
     await exhibition.save();
@@ -288,10 +316,12 @@ exports.deleteExhibition = async (req, res) => {
       return res.redirect('/exhibitions');
     }
     
-    // Delete cover image
-    const imagePath = path.join(__dirname, '../public/uploads/', exhibition.coverImage);
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
+    // Delete cover image if exists
+    if (exhibition.coverImage) {
+      const imagePath = path.join(__dirname, '../public/uploads/', exhibition.coverImage);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
     }
     
     await exhibition.remove();

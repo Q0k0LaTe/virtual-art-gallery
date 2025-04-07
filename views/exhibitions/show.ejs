@@ -1,243 +1,243 @@
 <!-- views/exhibitions/show.ejs -->
 <section class="py-4">
-    <div class="container">
-      <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="/">Home</a></li>
-          <li class="breadcrumb-item"><a href="/exhibitions">Exhibitions</a></li>
-          <li class="breadcrumb-item active" aria-current="page"><%= exhibition.title %></li>
-        </ol>
-      </nav>
-      
-      <div class="row">
-        <!-- Exhibition Details -->
-        <div class="col-lg-8 mb-4">
-          <div class="card h-100">
-            <img src="/uploads/<%= exhibition.coverImage %>" class="card-img-top" alt="<%= exhibition.title %>" style="height: 300px; object-fit: cover;">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1 class="h2 mb-0"><%= exhibition.title %></h1>
-                <% if (exhibition.isPublished) { %>
-                  <span class="badge bg-success">Published</span>
-                <% } else { %>
-                  <span class="badge bg-warning text-dark">Draft</span>
-                <% } %>
-              </div>
-              
-              <p class="text-muted">
-                Curated by <a href="/users/<%= exhibition.curator._id %>"><%= exhibition.curator.name %></a>
-              </p>
-              
-              <p class="mb-4">
-                <i class="far fa-calendar-alt"></i> 
-                <%= new Date(exhibition.startDate).toLocaleDateString() %> - 
-                <%= new Date(exhibition.endDate).toLocaleDateString() %>
-              </p>
-              
-              <h2 class="h4 mb-3">About This Exhibition</h2>
-              <p><%= exhibition.description %></p>
-              
-              <div class="d-flex mt-4">
-                <a href="/exhibitions/<%= exhibition._id %>/view3d" class="btn btn-primary me-2">
-                  <i class="fas fa-cube"></i> Experience in 3D
-                </a>
-                
-                <% if (typeof user !== 'undefined' && user && 
-                      (user._id.toString() === exhibition.curator._id.toString() || user.role === 'admin')) { %>
-                  <a href="/exhibitions/<%= exhibition._id %>/edit" class="btn btn-outline-secondary me-2">
-                    <i class="fas fa-edit"></i> Edit
-                  </a>
-                  <form action="/exhibitions/<%= exhibition._id %>?_method=DELETE" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-outline-danger" 
-                            onclick="return confirm('Are you sure you want to delete this exhibition?')">
-                      <i class="fas fa-trash"></i> Delete
-                    </button>
-                  </form>
-                <% } %>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Sidebar -->
-        <div class="col-lg-4 mb-4">
-          <!-- Curator Info -->
-          <div class="card mb-4">
-            <div class="card-header">
-              <h2 class="h5 mb-0">About the Curator</h2>
-            </div>
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <img src="/uploads/<%= exhibition.curator.profileImage %>" alt="<%= exhibition.curator.name %>" class="rounded-circle me-3" width="60" height="60">
-                <div>
-                  <h3 class="h5 mb-1"><%= exhibition.curator.name %></h3>
-                  <% if (exhibition.curator.bio) { %>
-                    <p class="small"><%= exhibition.curator.bio.substring(0, 150) %><%= exhibition.curator.bio.length > 150 ? '...' : '' %></p>
-                  <% } else { %>
-                    <p class="small text-muted">No bio available</p>
-                  <% } %>
-                  <a href="/users/<%= exhibition.curator._id %>" class="btn btn-sm btn-outline-primary">View Profile</a>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Exhibition Info -->
-          <div class="card mb-4">
-            <div class="card-header">
-              <h2 class="h5 mb-0">Exhibition Details</h2>
-            </div>
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>Status</span>
-                <% if (exhibition.isPublished) { %>
-                  <span class="badge bg-success">Published</span>
-                <% } else { %>
-                  <span class="badge bg-warning text-dark">Draft</span>
-                <% } %>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>Start Date</span>
-                <span><%= new Date(exhibition.startDate).toLocaleDateString() %></span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>End Date</span>
-                <span><%= new Date(exhibition.endDate).toLocaleDateString() %></span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>Artworks</span>
-                <span class="badge bg-primary rounded-pill"><%= exhibition.artworks.length %></span>
-              </li>
-            </ul>
-          </div>
-          
-          <!-- Featured Artworks -->
-          <div class="card">
-            <div class="card-header">
-              <h2 class="h5 mb-0">Featured Artworks</h2>
-            </div>
-            <div class="card-body p-0">
-              <% if (exhibition.artworks && exhibition.artworks.length > 0) { %>
-                <ul class="list-group list-group-flush">
-                  <% exhibition.artworks.slice(0, 5).forEach(artwork => { %>
-                    <li class="list-group-item">
-                      <div class="d-flex align-items-center">
-                        <img src="/uploads/<%= artwork.image %>" alt="<%= artwork.title %>" class="img-thumbnail me-3" width="60">
-                        <div>
-                          <h3 class="h6 mb-0"><%= artwork.title %></h3>
-                          <p class="text-muted small mb-0">by <%= artwork.artist.name %></p>
-                          <a href="/artworks/<%= artwork._id %>" class="btn btn-sm btn-link p-0">View Details</a>
-                        </div>
-                      </div>
-                    </li>
-                  <% }); %>
-                </ul>
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="/exhibitions">Exhibitions</a></li>
+        <li class="breadcrumb-item active" aria-current="page"><%= exhibition.title %></li>
+      </ol>
+    </nav>
+    
+    <div class="row">
+      <!-- Exhibition Details -->
+      <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+          <img src="<%= exhibition.coverImageUrl || `/uploads/${exhibition.coverImage}` %>" class="card-img-top" alt="<%= exhibition.title %>" style="height: 300px; object-fit: cover;" onerror="this.src='/img/image-not-found.jpg'">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h1 class="h2 mb-0"><%= exhibition.title %></h1>
+              <% if (exhibition.isPublished) { %>
+                <span class="badge bg-success">Published</span>
               <% } else { %>
-                <div class="p-3 text-center">
-                  <p class="text-muted mb-0">No artworks in this exhibition</p>
-                </div>
+                <span class="badge bg-warning text-dark">Draft</span>
+              <% } %>
+            </div>
+            
+            <p class="text-muted">
+              Curated by <a href="/users/<%= exhibition.curator._id %>"><%= exhibition.curator.name %></a>
+            </p>
+            
+            <p class="mb-4">
+              <i class="far fa-calendar-alt"></i> 
+              <%= new Date(exhibition.startDate).toLocaleDateString() %> - 
+              <%= new Date(exhibition.endDate).toLocaleDateString() %>
+            </p>
+            
+            <h2 class="h4 mb-3">About This Exhibition</h2>
+            <p><%= exhibition.description %></p>
+            
+            <div class="d-flex mt-4">
+              <a href="/exhibitions/<%= exhibition._id %>/view3d" class="btn btn-primary me-2">
+                <i class="fas fa-cube"></i> Experience in 3D
+              </a>
+              
+              <% if (typeof user !== 'undefined' && user && 
+                    (user._id.toString() === exhibition.curator._id.toString() || user.role === 'admin')) { %>
+                <a href="/exhibitions/<%= exhibition._id %>/edit" class="btn btn-outline-secondary me-2">
+                  <i class="fas fa-edit"></i> Edit
+                </a>
+                <form action="/exhibitions/<%= exhibition._id %>?_method=DELETE" method="POST" class="d-inline">
+                  <button type="submit" class="btn btn-outline-danger" 
+                          onclick="return confirm('Are you sure you want to delete this exhibition?')">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </form>
               <% } %>
             </div>
           </div>
         </div>
       </div>
       
-      <!-- Exhibition Gallery -->
-      <div class="mt-5">
-        <h2 class="section-title">Exhibition Gallery</h2>
-        <div class="row">
-          <% if (exhibition.artworks && exhibition.artworks.length > 0) { %>
-            <% exhibition.artworks.forEach(artwork => { %>
-              <div class="col-md-3 mb-4">
-                <div class="card h-100">
-                  <img src="/uploads/<%= artwork.image %>" class="card-img-top" alt="<%= artwork.title %>" style="height: 180px; object-fit: cover;">
-                  <div class="card-body">
-                    <h5 class="card-title"><%= artwork.title %></h5>
-                    <p class="card-text text-muted">by <%= artwork.artist.name %></p>
-                    <p class="card-text"><strong>$<%= artwork.price.toFixed(2) %></strong></p>
-                    <a href="/artworks/<%= artwork._id %>" class="btn btn-sm btn-outline-primary">View Details</a>
-                  </div>
+      <!-- Sidebar -->
+      <div class="col-lg-4 mb-4">
+        <!-- Curator Info -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-0">About the Curator</h2>
+          </div>
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <img src="/uploads/<%= exhibition.curator.profileImage %>" alt="<%= exhibition.curator.name %>" class="rounded-circle me-3" width="60" height="60">
+              <div>
+                <h3 class="h5 mb-1"><%= exhibition.curator.name %></h3>
+                <% if (exhibition.curator.bio) { %>
+                  <p class="small"><%= exhibition.curator.bio.substring(0, 150) %><%= exhibition.curator.bio.length > 150 ? '...' : '' %></p>
+                <% } else { %>
+                  <p class="small text-muted">No bio available</p>
+                <% } %>
+                <a href="/users/<%= exhibition.curator._id %>" class="btn btn-sm btn-outline-primary">View Profile</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Exhibition Info -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-0">Exhibition Details</h2>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Status</span>
+              <% if (exhibition.isPublished) { %>
+                <span class="badge bg-success">Published</span>
+              <% } else { %>
+                <span class="badge bg-warning text-dark">Draft</span>
+              <% } %>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Start Date</span>
+              <span><%= new Date(exhibition.startDate).toLocaleDateString() %></span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>End Date</span>
+              <span><%= new Date(exhibition.endDate).toLocaleDateString() %></span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Artworks</span>
+              <span class="badge bg-primary rounded-pill"><%= exhibition.artworks.length %></span>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- Featured Artworks -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="h5 mb-0">Featured Artworks</h2>
+          </div>
+          <div class="card-body p-0">
+            <% if (exhibition.artworks && exhibition.artworks.length > 0) { %>
+              <ul class="list-group list-group-flush">
+                <% exhibition.artworks.slice(0, 5).forEach(artwork => { %>
+                  <li class="list-group-item">
+                    <div class="d-flex align-items-center">
+                      <img src="<%= artwork.imageUrl || `/uploads/${artwork.image}` %>" alt="<%= artwork.title %>" class="img-thumbnail me-3" width="60" onerror="this.src='/img/image-not-found.jpg'">
+                      <div>
+                        <h3 class="h6 mb-0"><%= artwork.title %></h3>
+                        <p class="text-muted small mb-0">by <%= artwork.artist.name %></p>
+                        <a href="/artworks/<%= artwork._id %>" class="btn btn-sm btn-link p-0">View Details</a>
+                      </div>
+                    </div>
+                  </li>
+                <% }); %>
+              </ul>
+            <% } else { %>
+              <div class="p-3 text-center">
+                <p class="text-muted mb-0">No artworks in this exhibition</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Exhibition Gallery -->
+    <div class="mt-5">
+      <h2 class="section-title">Exhibition Gallery</h2>
+      <div class="row">
+        <% if (exhibition.artworks && exhibition.artworks.length > 0) { %>
+          <% exhibition.artworks.forEach(artwork => { %>
+            <div class="col-md-3 mb-4">
+              <div class="card h-100">
+                <img src="<%= artwork.imageUrl || `/uploads/${artwork.image}` %>" class="card-img-top" alt="<%= artwork.title %>" style="height: 180px; object-fit: cover;" onerror="this.src='/img/image-not-found.jpg'">
+                <div class="card-body">
+                  <h5 class="card-title"><%= artwork.title %></h5>
+                  <p class="card-text text-muted">by <%= artwork.artist.name %></p>
+                  <p class="card-text"><strong>$<%= artwork.price.toFixed(2) %></strong></p>
+                  <a href="/artworks/<%= artwork._id %>" class="btn btn-sm btn-outline-primary">View Details</a>
                 </div>
               </div>
-            <% }); %>
-          <% } else { %>
-            <div class="col-12 text-center py-5">
-              <i class="fas fa-images fa-3x text-muted mb-3"></i>
-              <p class="text-muted">No artworks in this exhibition</p>
             </div>
-          <% } %>
+          <% }); %>
+        <% } else { %>
+          <div class="col-12 text-center py-5">
+            <i class="fas fa-images fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No artworks in this exhibition</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3D Preview Teaser -->
+<section class="py-5 bg-light">
+  <div class="container text-center">
+    <h2 class="mb-4">Experience This Exhibition in 3D</h2>
+    <p class="lead mb-4">Step into a virtual gallery space and view the artwork in an immersive environment.</p>
+    <div class="mb-4">
+      <div class="ratio ratio-16x9" style="max-width: 800px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);">
+        <div class="bg-dark d-flex align-items-center justify-content-center">
+          <div class="text-center text-white">
+            <i class="fas fa-cube fa-4x mb-3"></i>
+            <h3>3D Exhibition Preview</h3>
+            <p>Click the button below to enter the virtual exhibition</p>
+          </div>
         </div>
       </div>
     </div>
-  </section>
-  
-  <!-- 3D Preview Teaser -->
-  <section class="py-5 bg-light">
-    <div class="container text-center">
-      <h2 class="mb-4">Experience This Exhibition in 3D</h2>
-      <p class="lead mb-4">Step into a virtual gallery space and view the artwork in an immersive environment.</p>
-      <div class="mb-4">
-        <div class="ratio ratio-16x9" style="max-width: 800px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);">
-          <div class="bg-dark d-flex align-items-center justify-content-center">
-            <div class="text-center text-white">
-              <i class="fas fa-cube fa-4x mb-3"></i>
-              <h3>3D Exhibition Preview</h3>
-              <p>Click the button below to enter the virtual exhibition</p>
-            </div>
+    <a href="/exhibitions/<%= exhibition._id %>/view3d" class="btn btn-primary btn-lg">
+      <i class="fas fa-vr-cardboard"></i> Enter 3D View
+    </a>
+  </div>
+</section>
+
+<!-- Other Exhibitions -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="section-title">Other Exhibitions You Might Like</h2>
+    <div class="row">
+      <!-- This would be populated dynamically in a real application -->
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="bg-secondary" style="height: 200px;"></div>
+          <div class="card-body">
+            <h5 class="card-title">Modern Perspectives</h5>
+            <p class="card-text text-muted">Curated by John Davis</p>
+            <p class="card-text">
+              <small class="text-muted">Aug 15, 2023 - Oct 30, 2023</small>
+            </p>
           </div>
         </div>
       </div>
-      <a href="/exhibitions/<%= exhibition._id %>/view3d" class="btn btn-primary btn-lg">
-        <i class="fas fa-vr-cardboard"></i> Enter 3D View
-      </a>
-    </div>
-  </section>
-  
-  <!-- Other Exhibitions -->
-  <section class="py-5">
-    <div class="container">
-      <h2 class="section-title">Other Exhibitions You Might Like</h2>
-      <div class="row">
-        <!-- This would be populated dynamically in a real application -->
-        <div class="col-md-4 mb-4">
-          <div class="card h-100">
-            <div class="bg-secondary" style="height: 200px;"></div>
-            <div class="card-body">
-              <h5 class="card-title">Modern Perspectives</h5>
-              <p class="card-text text-muted">Curated by John Davis</p>
-              <p class="card-text">
-                <small class="text-muted">Aug 15, 2023 - Oct 30, 2023</small>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4 mb-4">
-          <div class="card h-100">
-            <div class="bg-secondary" style="height: 200px;"></div>
-            <div class="card-body">
-              <h5 class="card-title">Abstract Expressions</h5>
-              <p class="card-text text-muted">Curated by Sarah Johnson</p>
-              <p class="card-text">
-                <small class="text-muted">Sep 1, 2023 - Nov 15, 2023</small>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4 mb-4">
-          <div class="card h-100">
-            <div class="bg-secondary" style="height: 200px;"></div>
-            <div class="card-body">
-              <h5 class="card-title">Digital Frontiers</h5>
-              <p class="card-text text-muted">Curated by Maria Rodriguez</p>
-              <p class="card-text">
-                <small class="text-muted">Oct 10, 2023 - Dec 20, 2023</small>
-              </p>
-            </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="bg-secondary" style="height: 200px;"></div>
+          <div class="card-body">
+            <h5 class="card-title">Abstract Expressions</h5>
+            <p class="card-text text-muted">Curated by Sarah Johnson</p>
+            <p class="card-text">
+              <small class="text-muted">Sep 1, 2023 - Nov 15, 2023</small>
+            </p>
           </div>
         </div>
       </div>
-      <div class="text-center mt-3">
-        <a href="/exhibitions" class="btn btn-outline-primary">Explore All Exhibitions</a>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="bg-secondary" style="height: 200px;"></div>
+          <div class="card-body">
+            <h5 class="card-title">Digital Frontiers</h5>
+            <p class="card-text text-muted">Curated by Maria Rodriguez</p>
+            <p class="card-text">
+              <small class="text-muted">Oct 10, 2023 - Dec 20, 2023</small>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
-  </section>
+    <div class="text-center mt-3">
+      <a href="/exhibitions" class="btn btn-outline-primary">Explore All Exhibitions</a>
+    </div>
+  </div>
+</section>

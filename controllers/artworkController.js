@@ -146,17 +146,18 @@ exports.renderCreateForm = (req, res) => {
 // @access  Private (Artists only)
 exports.createArtwork = async (req, res) => {
   try {
-    const { title, description, category, price, forSale, width, height, depth, unit } = req.body;
+    const { title, description, category, price, forSale, width, height, depth, unit, imageUrl } = req.body;
     
-    if (!req.file) {
-      req.flash('error_msg', 'Please upload an image');
+    // Check if at least one image source is provided (file upload or URL)
+    if (!req.file && !imageUrl) {
+      req.flash('error_msg', 'Please provide either an image upload or an image URL');
       return res.redirect('/artworks/create');
     }
     
-    await Artwork.create({
+    // Create artwork data
+    const artworkData = {
       title,
       description,
-      image: req.file.filename,
       category,
       price,
       forSale: forSale === 'true',
@@ -167,7 +168,16 @@ exports.createArtwork = async (req, res) => {
         unit: unit || 'cm'
       },
       artist: req.user.id
-    });
+    };
+    
+    // Set the image source (either file upload or URL)
+    if (req.file) {
+      artworkData.image = req.file.filename;
+    } else if (imageUrl) {
+      artworkData.imageUrl = imageUrl;
+    }
+    
+    await Artwork.create(artworkData);
     
     req.flash('success_msg', 'Artwork created successfully');
     res.redirect('/dashboard');
@@ -212,7 +222,7 @@ exports.renderEditForm = async (req, res) => {
 // @access  Private (Artwork owner only)
 exports.updateArtwork = async (req, res) => {
   try {
-    const { title, description, category, price, forSale, width, height, depth, unit } = req.body;
+    const { title, description, category, price, forSale, width, height, depth, unit, imageUrl } = req.body;
     
     const artwork = await Artwork.findById(req.params.id);
     
@@ -239,13 +249,30 @@ exports.updateArtwork = async (req, res) => {
       unit: unit || artwork.dimensions.unit
     };
     
+    // Update image if file is provided
     if (req.file) {
-      // Delete previous image
-      const previousImage = path.join(__dirname, '../public/uploads/', artwork.image);
-      if (fs.existsSync(previousImage)) {
-        fs.unlinkSync(previousImage);
+      // Delete previous image if it exists
+      if (artwork.image) {
+        const previousImage = path.join(__dirname, '../public/uploads/', artwork.image);
+        if (fs.existsSync(previousImage)) {
+          fs.unlinkSync(previousImage);
+        }
       }
       artwork.image = req.file.filename;
+      artwork.imageUrl = null; // Clear URL if file is uploaded
+    } 
+    // Update image URL if provided and different from current
+    else if (imageUrl && imageUrl !== artwork.imageUrl) {
+      artwork.imageUrl = imageUrl;
+      
+      // Delete previous uploaded image if switching to URL
+      if (artwork.image) {
+        const previousImage = path.join(__dirname, '../public/uploads/', artwork.image);
+        if (fs.existsSync(previousImage)) {
+          fs.unlinkSync(previousImage);
+        }
+        artwork.image = null;
+      }
     }
     
     await artwork.save();
@@ -277,10 +304,12 @@ exports.deleteArtwork = async (req, res) => {
       return res.redirect('/artworks');
     }
     
-    // Delete image file
-    const imagePath = path.join(__dirname, '../public/uploads/', artwork.image);
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
+    // Delete image file if exists
+    if (artwork.image) {
+      const imagePath = path.join(__dirname, '../public/uploads/', artwork.image);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
     }
     
     await artwork.remove();

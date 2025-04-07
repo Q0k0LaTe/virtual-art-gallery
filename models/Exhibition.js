@@ -13,8 +13,10 @@ const ExhibitionSchema = new mongoose.Schema({
     required: [true, 'Please add a description']
   },
   coverImage: {
-    type: String,
-    required: [true, 'Please upload a cover image']
+    type: String
+  },
+  coverImageUrl: {
+    type: String
   },
   startDate: {
     type: Date,
@@ -70,6 +72,14 @@ ExhibitionSchema.pre('save', function(next) {
   } else {
     next();
   }
+});
+
+// Add custom validation to ensure at least one image source is provided
+ExhibitionSchema.pre('validate', function(next) {
+  if (!this.coverImage && !this.coverImageUrl) {
+    this.invalidate('coverImage', 'Please provide either a cover image file or URL');
+  }
+  next();
 });
 
 module.exports = mongoose.model('Exhibition', ExhibitionSchema);
