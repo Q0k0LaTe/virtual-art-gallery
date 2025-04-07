@@ -1,0 +1,158 @@
+<!-- views/artworksurl/show.ejs -->
+<section class="py-4">
+    <div class="container">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="/artworksurl">URL Artworks</a></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= artwork.title %></li>
+        </ol>
+      </nav>
+      
+      <div class="row">
+        <!-- Artwork Image -->
+        <div class="col-md-6 mb-4">
+          <div class="card">
+            <img src="<%= artwork.imageUrl %>" class="artwork-image card-img-top" alt="<%= artwork.title %>" onerror="this.src='/img/image-not-found.jpg';">
+          </div>
+        </div>
+        
+        <!-- Artwork Details -->
+        <div class="col-md-6 mb-4">
+          <div class="artwork-info p-4">
+            <h1 class="mb-2"><%= artwork.title %></h1>
+            <p class="text-muted">by <a href="/users/<%= artwork.artist._id %>"><%= artwork.artist.name %></a></p>
+            
+            <hr class="my-4">
+            
+            <div class="d-flex align-items-center mb-3">
+              <div class="me-auto">
+                <h2 class="h4 mb-0">$<%= artwork.price.toFixed(2) %></h2>
+              </div>
+              <div>
+                <span class="badge bg-primary"><%= artwork.category %></span>
+                <% if (artwork.forSale) { %>
+                  <span class="badge bg-success ms-2">For Sale</span>
+                <% } else { %>
+                  <span class="badge bg-secondary ms-2">Not For Sale</span>
+                <% } %>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h3 class="h5">Description</h3>
+              <p><%= artwork.description %></p>
+            </div>
+            
+            <div class="mb-4">
+              <h3 class="h5">Dimensions</h3>
+              <p>
+                <%= artwork.dimensions.width %> × <%= artwork.dimensions.height %>
+                <% if (artwork.dimensions.depth > 0) { %> × <%= artwork.dimensions.depth %><% } %> <%= artwork.dimensions.unit %>
+              </p>
+            </div>
+            
+            <% if (artwork.forSale) { %>
+              <div class="mb-4">
+                <form action="/purchases" method="POST">
+                  <input type="hidden" name="artworkId" value="<%= artwork._id %>">
+                  <% if (typeof user !== 'undefined' && user) { %>
+                    <% if (user._id.toString() !== artwork.artist._id.toString()) { %>
+                      <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-shopping-cart"></i> Purchase Artwork
+                      </button>
+                    <% } else { %>
+                      <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> This is your artwork.
+                      </div>
+                    <% } %>
+                  <% } else { %>
+                    <a href="/users/login" class="btn btn-primary w-100">
+                      <i class="fas fa-sign-in-alt"></i> Login to Purchase
+                    </a>
+                  <% } %>
+                </form>
+              </div>
+            <% } else { %>
+              <div class="alert alert-secondary">
+                <i class="fas fa-info-circle"></i> This artwork is not currently for sale.
+              </div>
+            <% } %>
+            
+            <hr class="my-4">
+            
+            <!-- Artist Info -->
+            <div class="d-flex align-items-center">
+              <img src="/uploads/<%= artwork.artist.profileImage %>" alt="<%= artwork.artist.name %>" class="rounded-circle me-3" width="60" height="60">
+              <div>
+                <h3 class="h5 mb-1">About the Artist</h3>
+                <p class="mb-2"><strong><%= artwork.artist.name %></strong></p>
+                <% if (artwork.artist.bio) { %>
+                  <p class="small"><%= artwork.artist.bio.substring(0, 150) %><%= artwork.artist.bio.length > 150 ? '...' : '' %></p>
+                <% } else { %>
+                  <p class="small text-muted">No bio available</p>
+                <% } %>
+                <a href="/users/<%= artwork.artist._id %>" class="btn btn-sm btn-outline-primary">View Profile</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- View in 3D -->
+      <div class="row mb-5">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="h5 mb-0">View in 3D Gallery</h2>
+            </div>
+            <div class="card-body text-center">
+              <p>Experience this artwork in an immersive 3D gallery.</p>
+              <a href="/exhibitions/<%= artwork._id %>/3dview" class="btn btn-primary">
+                <i class="fas fa-cube"></i> View in 3D
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- More by this Artist -->
+      <% if (moreByArtist && moreByArtist.length > 0) { %>
+        <h2 class="section-title">More by <%= artwork.artist.name %></h2>
+        <div class="row">
+          <% moreByArtist.forEach(art => { %>
+            <div class="col-md-3 mb-4">
+              <div class="card h-100">
+                <img src="<%= art.imageUrl %>" class="card-img-top" alt="<%= art.title %>" style="height: 180px; object-fit: cover;" onerror="this.src='/img/image-not-found.jpg';">
+                <div class="card-body">
+                  <h5 class="card-title"><%= art.title %></h5>
+                  <p class="card-text"><strong>$<%= art.price.toFixed(2) %></strong></p>
+                  <a href="/artworksurl/<%= art._id %>" class="btn btn-sm btn-outline-primary">View Details</a>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+      
+      <!-- Similar Artworks -->
+      <% if (similarArtworks && similarArtworks.length > 0) { %>
+        <h2 class="section-title">Similar Artworks</h2>
+        <div class="row">
+          <% similarArtworks.forEach(art => { %>
+            <div class="col-md-3 mb-4">
+              <div class="card h-100">
+                <img src="<%= art.imageUrl %>" class="card-img-top" alt="<%= art.title %>" style="height: 180px; object-fit: cover;" onerror="this.src='/img/image-not-found.jpg';">
+                <div class="card-body">
+                  <h5 class="card-title"><%= art.title %></h5>
+                  <p class="card-text text-muted">by <%= art.artist.name %></p>
+                  <p class="card-text"><strong>$<%= art.price.toFixed(2) %></strong></p>
+                  <a href="/artworksurl/<%= art._id %>" class="btn btn-sm btn-outline-primary">View Details</a>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </section>

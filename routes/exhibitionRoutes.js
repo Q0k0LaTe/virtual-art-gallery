@@ -60,4 +60,58 @@ router.delete('/:id', protect, deleteExhibition);
 // @access  Public
 router.get('/:id/view3d', view3DExhibition);
 
+// Add a new route for viewing a single artwork in 3D
+// @route   GET /exhibitions/:artworkId/3dview
+// @desc    View a single artwork in 3D
+// @access  Public
+router.get('/:artworkId/3dview', async (req, res) => {
+  try {
+    // Check if it's a URL artwork or regular artwork
+    let artwork;
+    
+    // Try to find artwork in URL model first
+    const ArtworkURL = require('../models/ArtworkURL');
+    artwork = await ArtworkURL.findById(req.params.artworkId)
+      .populate('artist', 'name');
+    
+    // If not found, try regular artwork model
+    if (!artwork) {
+      const Artwork = require('../models/Artwork');
+      artwork = await Artwork.findById(req.params.artworkId)
+        .populate('artist', 'name');
+    }
+    
+    if (!artwork) {
+      req.flash('error_msg', 'Artwork not found');
+      return res.redirect('/artworks');
+    }
+    
+    // Create a mini-exhibition with just this artwork
+    const exhibition = {
+      title: `${artwork.title} - 3D View`,
+      curator: artwork.artist,
+      sceneData: {
+        roomWidth: 20,
+        roomHeight: 4,
+        roomDepth: 20,
+        wallColor: '#ffffff',
+        floorColor: '#aaaaaa',
+        backgroundColor: '#f0f0f0'
+      },
+      artworks: [artwork]
+    };
+    
+    res.render('exhibitions/single-artwork-3d', {
+      title: `${artwork.title} - 3D View`,
+      artwork,
+      exhibition,
+      threejs: true
+    });
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Cannot load 3D view');
+    res.redirect('/artworks');
+  }
+});
+
 module.exports = router;

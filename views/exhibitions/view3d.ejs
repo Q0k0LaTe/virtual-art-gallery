@@ -1,4 +1,4 @@
-<!-- views/exhibitions/view3d.ejs -->
+// views/exhibitions/view3d.ejs
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +9,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <!-- React and ReactDOM -->
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/examples/js/controls/OrbitControls.js"></script>
   <!-- Custom CSS -->
   <style>
     body {
@@ -18,8 +24,9 @@
     }
     #exhibition-container {
       width: 100%;
-      height: 600px;
+      height: 100vh;
       background-color: #f8f9fa;
+      position: relative;
     }
     .artwork-details {
       position: absolute;
@@ -32,6 +39,8 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
       display: none;
       z-index: 100;
+      max-height: 80vh;
+      overflow-y: auto;
     }
     .exhibition-controls {
       position: absolute;
@@ -43,9 +52,52 @@
       z-index: 100;
     }
     .header-section {
-      background-color: #343a40;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(52, 58, 64, 0.8);
       color: white;
       padding: 15px 0;
+      z-index: 100;
+    }
+    .artwork-placeholder {
+      background-color: #ddd;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      color: #666;
+    }
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.8);
+      z-index: 1000;
+    }
+    .spinner {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 2s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .first-person-mode {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 100;
     }
   </style>
 </head>
@@ -61,75 +113,40 @@
     </div>
   </div>
 
-  <!-- Info Cards -->
-  <div class="container my-4">
-    <div class="row">
-      <div class="col-md-8">
-        <div class="card mb-3">
-          <div class="card-body">
-            <h3 class="h5">About This Exhibition</h3>
-            <p><%= exhibition.description %></p>
-            <p>
-              <strong>Dates:</strong> 
-              <%= new Date(exhibition.startDate).toLocaleDateString() %> - 
-              <%= new Date(exhibition.endDate).toLocaleDateString() %>
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card mb-3">
-          <div class="card-body">
-            <h3 class="h5">Featured Artworks</h3>
-            <ul class="list-group list-group-flush">
-              <% if (exhibition.artworks && exhibition.artworks.length > 0) { %>
-                <% exhibition.artworks.forEach(artwork => { %>
-                  <li class="list-group-item p-2">
-                    <a href="/artworks/<%= artwork._id %>" class="text-decoration-none">
-                      <%= artwork.title %> by <%= artwork.artist.name %>
-                    </a>
-                  </li>
-                <% }); %>
-              <% } else { %>
-                <li class="list-group-item">No artworks in this exhibition.</li>
-              <% } %>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- 3D Viewer Container -->
-  <div class="container mb-4">
-    <div class="card">
-      <div class="card-body p-0 position-relative">
-        <div id="exhibition-container"></div>
-        
-        <!-- Artwork Details Panel -->
-        <div id="artwork-details" class="artwork-details">
-          <button type="button" class="btn-close float-end" onclick="document.getElementById('artwork-details').style.display='none'"></button>
-          <div id="artwork-content">
-            <h4>Select an artwork</h4>
-            <p>Click on any artwork in the exhibition to view details.</p>
-          </div>
-        </div>
-        
-        <!-- Controls Panel -->
-        <div class="exhibition-controls">
-          <button class="btn btn-sm btn-light me-2" id="zoom-in"><i class="fas fa-search-plus"></i> Zoom In</button>
-          <button class="btn btn-sm btn-light me-2" id="zoom-out"><i class="fas fa-search-minus"></i> Zoom Out</button>
-          <button class="btn btn-sm btn-light" id="reset-camera"><i class="fas fa-sync"></i> Reset View</button>
-        </div>
-      </div>
+  <div id="exhibition-container"></div>
+  
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div>
+      <div class="spinner mb-3"></div>
+      <p class="text-center">Loading 3D Gallery...</p>
     </div>
   </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/examples/js/controls/OrbitControls.js"></script>
+  
+  <!-- First Person Mode Toggle -->
+  <div class="first-person-mode">
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="firstPersonToggle">
+      <label class="form-check-label text-white" for="firstPersonToggle">First Person Mode</label>
+    </div>
+  </div>
+  
+  <!-- Artwork Details Panel -->
+  <div id="artwork-details" class="artwork-details">
+    <button type="button" class="btn-close float-end" onclick="document.getElementById('artwork-details').style.display='none'"></button>
+    <div id="artwork-content">
+      <h4>Select an artwork</h4>
+      <p>Click on any artwork in the exhibition to view details.</p>
+    </div>
+  </div>
+  
+  <!-- Controls Panel -->
+  <div class="exhibition-controls">
+    <button class="btn btn-sm btn-light me-2" id="zoom-in"><i class="fas fa-search-plus"></i> Zoom In</button>
+    <button class="btn btn-sm btn-light me-2" id="zoom-out"><i class="fas fa-search-minus"></i> Zoom Out</button>
+    <button class="btn btn-sm btn-light" id="reset-camera"><i class="fas fa-sync"></i> Reset View</button>
+  </div>
   
   <!-- Exhibition Data -->
   <script>
@@ -153,13 +170,21 @@
     console.log("Exhibition data loaded:", exhibitionData);
   </script>
 
-  <!-- Simple Three.js implementation -->
+  <!-- Enhanced Three.js implementation -->
   <script>
     // Global variables
     let scene, camera, renderer, controls;
     let artworks = [];
     let wallMeshes = [];
     let originalCameraPosition;
+    let firstPersonControls = false;
+    let moveForward = false;
+    let moveBackward = false;
+    let moveLeft = false;
+    let moveRight = false;
+    let velocity = new THREE.Vector3();
+    let direction = new THREE.Vector3();
+    const clock = new THREE.Clock();
 
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
@@ -179,8 +204,7 @@
       // Create camera
       camera = new THREE.PerspectiveCamera(
         75,
-        document.getElementById('exhibition-container').clientWidth / 
-        document.getElementById('exhibition-container').clientHeight,
+        window.innerWidth / window.innerHeight,
         0.1,
         1000
       );
@@ -189,16 +213,15 @@
       
       // Create renderer
       renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(
-        document.getElementById('exhibition-container').clientWidth,
-        document.getElementById('exhibition-container').clientHeight
-      );
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
       document.getElementById('exhibition-container').appendChild(renderer.domElement);
       
       // Add orbit controls
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2; // Don't go below the floor
       
       // Add lights
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -206,7 +229,29 @@
       
       const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
       directionalLight.position.set(5, 10, 7.5);
+      directionalLight.castShadow = true;
       scene.add(directionalLight);
+
+      // Add point lights at corners for better illumination
+      const roomWidth = exhibitionData.sceneData.roomWidth || 20;
+      const roomHeight = exhibitionData.sceneData.roomHeight || 4;
+      const roomDepth = exhibitionData.sceneData.roomDepth || 20;
+      
+      const cornerLight1 = new THREE.PointLight(0xffffff, 0.5, 0);
+      cornerLight1.position.set(roomWidth/2 - 2, roomHeight - 1, roomDepth/2 - 2);
+      scene.add(cornerLight1);
+      
+      const cornerLight2 = new THREE.PointLight(0xffffff, 0.5, 0);
+      cornerLight2.position.set(-roomWidth/2 + 2, roomHeight - 1, roomDepth/2 - 2);
+      scene.add(cornerLight2);
+      
+      const cornerLight3 = new THREE.PointLight(0xffffff, 0.5, 0);
+      cornerLight3.position.set(roomWidth/2 - 2, roomHeight - 1, -roomDepth/2 + 2);
+      scene.add(cornerLight3);
+      
+      const cornerLight4 = new THREE.PointLight(0xffffff, 0.5, 0);
+      cornerLight4.position.set(-roomWidth/2 + 2, roomHeight - 1, -roomDepth/2 + 2);
+      scene.add(cornerLight4);
       
       // Create room
       createRoom();
@@ -216,19 +261,80 @@
       
       // Handle window resize
       window.addEventListener('resize', function() {
-        camera.aspect = document.getElementById('exhibition-container').clientWidth / 
-                        document.getElementById('exhibition-container').clientHeight;
+        camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(
-          document.getElementById('exhibition-container').clientWidth,
-          document.getElementById('exhibition-container').clientHeight
-        );
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+      
+      // Set up keyboard controls for first person mode
+      document.addEventListener('keydown', onKeyDown, false);
+      document.addEventListener('keyup', onKeyUp, false);
+      
+      // Toggle between orbit and first person controls
+      document.getElementById('firstPersonToggle').addEventListener('change', function(event) {
+        firstPersonControls = event.target.checked;
+        
+        if (firstPersonControls) {
+          controls.enabled = false;
+          document.body.style.cursor = 'none'; // Hide cursor in first person mode
+        } else {
+          controls.enabled = true;
+          document.body.style.cursor = 'auto';
+        }
       });
       
       // Start animation loop
       animate();
       
+      // Hide loading overlay when everything is loaded
+      setTimeout(() => {
+        document.getElementById('loading-overlay').style.display = 'none';
+      }, 2000);
+      
       console.log("Three.js scene initialized");
+    }
+
+    // Keyboard controls for first person movement
+    function onKeyDown(event) {
+      switch (event.code) {
+        case 'ArrowUp':
+        case 'KeyW':
+          moveForward = true;
+          break;
+        case 'ArrowLeft':
+        case 'KeyA':
+          moveLeft = true; 
+          break;
+        case 'ArrowDown':
+        case 'KeyS':
+          moveBackward = true;
+          break;
+        case 'ArrowRight':
+        case 'KeyD':
+          moveRight = true;
+          break;
+      }
+    }
+
+    function onKeyUp(event) {
+      switch (event.code) {
+        case 'ArrowUp':
+        case 'KeyW':
+          moveForward = false;
+          break;
+        case 'ArrowLeft':
+        case 'KeyA':
+          moveLeft = false;
+          break;
+        case 'ArrowDown':
+        case 'KeyS':
+          moveBackward = false;
+          break;
+        case 'ArrowRight':
+        case 'KeyD':
+          moveRight = false;
+          break;
+      }
     }
 
     // Create gallery room
@@ -241,13 +347,21 @@
       
       // Floor
       const floorGeometry = new THREE.PlaneGeometry(roomWidth, roomDepth);
+      const floorTexture = new THREE.TextureLoader().load('https://images.unsplash.com/photo-1604754573493-65a94d7b4af9?auto=format&fit=crop&w=1024&q=80');
+      floorTexture.wrapS = THREE.RepeatWrapping;
+      floorTexture.wrapT = THREE.RepeatWrapping;
+      floorTexture.repeat.set(4, 4);
+      
       const floorMaterial = new THREE.MeshStandardMaterial({
+        map: floorTexture,
         color: floorColor,
         roughness: 0.8
       });
+      
       const floor = new THREE.Mesh(floorGeometry, floorMaterial);
       floor.rotation.x = -Math.PI / 2;
       floor.position.y = 0;
+      floor.receiveShadow = true;
       scene.add(floor);
       
       // Create walls
@@ -262,6 +376,7 @@
         wallMaterial
       );
       backWall.position.set(0, roomHeight / 2, -roomDepth / 2);
+      backWall.receiveShadow = true;
       scene.add(backWall);
       wallMeshes.push(backWall);
       
@@ -272,6 +387,7 @@
       );
       frontWall.position.set(0, roomHeight / 2, roomDepth / 2);
       frontWall.rotation.y = Math.PI;
+      frontWall.receiveShadow = true;
       scene.add(frontWall);
       wallMeshes.push(frontWall);
       
@@ -282,6 +398,7 @@
       );
       leftWall.position.set(-roomWidth / 2, roomHeight / 2, 0);
       leftWall.rotation.y = Math.PI / 2;
+      leftWall.receiveShadow = true;
       scene.add(leftWall);
       wallMeshes.push(leftWall);
       
@@ -292,8 +409,63 @@
       );
       rightWall.position.set(roomWidth / 2, roomHeight / 2, 0);
       rightWall.rotation.y = -Math.PI / 2;
+      rightWall.receiveShadow = true;
       scene.add(rightWall);
       wallMeshes.push(rightWall);
+      
+      // Ceiling (optional)
+      const ceilingMaterial = new THREE.MeshStandardMaterial({
+        color: wallColor,
+        roughness: 0.9
+      });
+      
+      const ceiling = new THREE.Mesh(
+        new THREE.PlaneGeometry(roomWidth, roomDepth),
+        ceilingMaterial
+      );
+      ceiling.position.set(0, roomHeight, 0);
+      ceiling.rotation.x = Math.PI / 2;
+      ceiling.receiveShadow = true;
+      scene.add(ceiling);
+      
+      // Add some decoration elements
+      addRoomDecorations(roomWidth, roomHeight, roomDepth);
+    }
+    
+    // Add decorative elements to the room
+    function addRoomDecorations(roomWidth, roomHeight, roomDepth) {
+      // Add a central pedestal
+      const pedestalGeometry = new THREE.BoxGeometry(2, 1, 2);
+      const pedestalMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x888888,
+        roughness: 0.7
+      });
+      const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+      pedestal.position.set(0, 0.5, 0);
+      pedestal.castShadow = true;
+      pedestal.receiveShadow = true;
+      scene.add(pedestal);
+      
+      // Add some subtle spotlights aimed at walls
+      const spotLight1 = new THREE.SpotLight(0xffffff, 0.8);
+      spotLight1.position.set(0, roomHeight - 0.5, 0);
+      spotLight1.angle = Math.PI / 6;
+      spotLight1.penumbra = 0.2;
+      spotLight1.decay = 2;
+      spotLight1.distance = roomWidth;
+      spotLight1.target.position.set(roomWidth/3, roomHeight/2, -roomDepth/3);
+      scene.add(spotLight1);
+      scene.add(spotLight1.target);
+      
+      const spotLight2 = new THREE.SpotLight(0xffffff, 0.8);
+      spotLight2.position.set(0, roomHeight - 0.5, 0);
+      spotLight2.angle = Math.PI / 6;
+      spotLight2.penumbra = 0.2;
+      spotLight2.decay = 2;
+      spotLight2.distance = roomWidth;
+      spotLight2.target.position.set(-roomWidth/3, roomHeight/2, roomDepth/3);
+      scene.add(spotLight2);
+      scene.add(spotLight2.target);
     }
 
     // Load artworks
@@ -308,22 +480,51 @@
       const wallPositions = calculateWallPositions(exhibitionData.artworks.length);
       
       exhibitionData.artworks.forEach((artwork, index) => {
-        const imageUrl = `/uploads/${artwork.image}`;
+        // Check if the image is a URL or a local path
+        let imageUrl = artwork.image;
+        if (!imageUrl.startsWith('http')) {
+          imageUrl = `/uploads/${artwork.image}`;
+        }
+        
         console.log(`Loading artwork: ${artwork.title} from ${imageUrl}`);
+        
+        // Create a loading placeholder
+        const placeholderGeometry = new THREE.PlaneGeometry(1.5, 1);
+        const placeholderMaterial = new THREE.MeshBasicMaterial({ 
+          color: 0xdddddd,
+          side: THREE.DoubleSide
+        });
+        const placeholder = new THREE.Mesh(placeholderGeometry, placeholderMaterial);
+        
+        // Position placeholder on wall
+        const position = wallPositions[index];
+        placeholder.position.set(position.x, position.y, position.z);
+        placeholder.rotation.y = position.rotation;
+        
+        // Add to scene temporarily
+        scene.add(placeholder);
         
         textureLoader.load(
           imageUrl,
           // Success callback
           function(texture) {
             console.log(`Successfully loaded texture for: ${artwork.title}`);
+            // Remove placeholder
+            scene.remove(placeholder);
+            
             const aspectRatio = texture.image.width / texture.image.height;
             const width = 1.5;
             const height = width / aspectRatio;
             
             // Create frame
             const frameGeometry = new THREE.BoxGeometry(width + 0.1, height + 0.1, 0.05);
-            const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+            const frameMaterial = new THREE.MeshStandardMaterial({ 
+              color: 0x222222,
+              roughness: 0.8,
+              metalness: 0.2
+            });
             const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            frame.castShadow = true;
             
             // Create artwork
             const artGeometry = new THREE.PlaneGeometry(width, height);
@@ -340,7 +541,6 @@
             artworkGroup.add(art);
             
             // Position on wall
-            const position = wallPositions[index];
             artworkGroup.position.set(position.x, position.y, position.z);
             artworkGroup.rotation.y = position.rotation;
             
@@ -350,18 +550,59 @@
               title: artwork.title,
               artist: artwork.artist.name,
               description: artwork.description,
-              price: artwork.price
+              price: artwork.price,
+              forSale: artwork.forSale,
+              image: imageUrl
             };
             
             // Add to scene
             scene.add(artworkGroup);
             artworks.push(artworkGroup);
+            
+            // Add a spotlight for each artwork
+            const spotLight = new THREE.SpotLight(0xffffff, 1);
+            spotLight.position.copy(position);
+            spotLight.position.y += 2;
+            if (position.z < 0) {
+              spotLight.position.z += 2;
+            } else {
+              spotLight.position.z -= 2;
+            }
+            
+            spotLight.target = art;
+            spotLight.angle = Math.PI / 8;
+            spotLight.penumbra = 0.3;
+            spotLight.decay = 2;
+            spotLight.distance = 10;
+            spotLight.castShadow = true;
+            
+            scene.add(spotLight);
           },
           // Progress callback
           undefined,
           // Error callback
           function(error) {
             console.error(`Error loading artwork: ${artwork.title}`, error);
+            
+            // Create error indicator on the placeholder
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const context = canvas.getContext('2d');
+            context.fillStyle = '#f8d7da';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.font = '24px Arial';
+            context.fillStyle = '#721c24';
+            context.textAlign = 'center';
+            context.fillText('Image Not Found', canvas.width/2, canvas.height/2);
+            context.fillText('🖼️', canvas.width/2, canvas.height/2 + 40);
+            
+            const errorTexture = new THREE.CanvasTexture(canvas);
+            placeholder.material.map = errorTexture;
+            placeholder.material.needsUpdate = true;
+            
+            // Store the placeholder in artworks array
+            artworks.push(placeholder);
           }
         );
       });
@@ -370,7 +611,7 @@
     // Calculate positions for artworks
     function calculateWallPositions(artworkCount) {
       const positions = [];
-      const artworksPerWall = Math.ceil(artworkCount / 4); // 4 walls
+      const artworksPerWall = Math.ceil(artworkCount / wallMeshes.length);
       
       wallMeshes.forEach((wall, wallIndex) => {
         const wallWidth = wall.geometry.parameters.width;
@@ -437,13 +678,38 @@
       const detailsPanel = document.getElementById('artwork-details');
       const detailsContent = document.getElementById('artwork-content');
       
-      detailsContent.innerHTML = `
-        <h4>${artwork.title}</h4>
-        <p><strong>Artist:</strong> ${artwork.artist}</p>
-        <p>${artwork.description}</p>
-        <p><strong>Price:</strong> $${artwork.price ? artwork.price.toFixed(2) : 'N/A'}</p>
-        <a href="/artworks/${artwork.id}" class="btn btn-primary btn-sm">View Details</a>
-      `;
+      // Create React component for artwork details
+      const ArtworkDetails = React.createElement('div', null, [
+        React.createElement('h4', {key: 'title', className: 'mb-3'}, artwork.title),
+        React.createElement('img', {
+          key: 'image',
+          src: artwork.image, 
+          alt: artwork.title,
+          className: 'img-fluid mb-3',
+          style: {maxHeight: '200px'}
+        }),
+        React.createElement('p', {key: 'artist'}, 
+          React.createElement('strong', null, 'Artist: '),
+          artwork.artist
+        ),
+        React.createElement('p', {key: 'desc'}, artwork.description),
+        React.createElement('p', {key: 'price'}, 
+          React.createElement('strong', null, 'Price: '),
+          `$${artwork.price ? artwork.price.toFixed(2) : 'N/A'}`
+        ),
+        React.createElement('p', {key: 'status'}, 
+          React.createElement('strong', null, 'Status: '),
+          artwork.forSale ? 'For Sale' : 'Not For Sale'
+        ),
+        React.createElement('a', {
+          key: 'link',
+          href: `/artworks/${artwork.id}`,
+          className: 'btn btn-primary btn-sm'
+        }, 'View Details')
+      ]);
+      
+      // Render React component
+      ReactDOM.render(ArtworkDetails, detailsContent);
       
       detailsPanel.style.display = 'block';
     }
@@ -471,10 +737,49 @@
       });
     }
 
+    // First person controls update
+    function updateFirstPersonControls() {
+      if (!firstPersonControls) return;
+      
+      const delta = clock.getDelta();
+      velocity.x -= velocity.x * 10.0 * delta;
+      velocity.z -= velocity.z * 10.0 * delta;
+      
+      direction.z = Number(moveForward) - Number(moveBackward);
+      direction.x = Number(moveRight) - Number(moveLeft);
+      direction.normalize();
+      
+      if (moveForward || moveBackward) velocity.z -= direction.z * 15.0 * delta;
+      if (moveLeft || moveRight) velocity.x -= direction.x * 15.0 * delta;
+      
+      // Move the camera
+      camera.translateX(velocity.x * delta);
+      camera.translateZ(velocity.z * delta);
+      
+      // Keep the camera at a fixed height (eye level)
+      camera.position.y = 1.6;
+      
+      // Boundary checks - keep inside the room
+      const roomWidth = exhibitionData.sceneData.roomWidth || 20;
+      const roomDepth = exhibitionData.sceneData.roomDepth || 20;
+      
+      const halfWidth = roomWidth / 2 - 1;
+      const halfDepth = roomDepth / 2 - 1;
+      
+      camera.position.x = Math.max(-halfWidth, Math.min(halfWidth, camera.position.x));
+      camera.position.z = Math.max(-halfDepth, Math.min(halfDepth, camera.position.z));
+    }
+
     // Animation loop
     function animate() {
       requestAnimationFrame(animate);
-      controls.update();
+      
+      if (firstPersonControls) {
+        updateFirstPersonControls();
+      } else {
+        controls.update();
+      }
+      
       renderer.render(scene, camera);
     }
   </script>

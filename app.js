@@ -93,6 +93,7 @@ try {
   const indexRoutes = require('./routes/indexRoutes');
   const userRoutes = require('./routes/userRoutes');
   const artworkRoutes = require('./routes/artworkRoutes');
+  const artworkURLRoutes = require('./routes/artworkURLRoutes'); // Add URL artworks route
   const exhibitionRoutes = require('./routes/exhibitionRoutes');
   const purchaseRoutes = require('./routes/purchaseRoutes');
 
@@ -100,6 +101,7 @@ try {
   app.use('/', indexRoutes);
   app.use('/users', userRoutes);
   app.use('/artworks', artworkRoutes);
+  app.use('/artworksurl', artworkURLRoutes); // Add URL artworks route
   app.use('/exhibitions', exhibitionRoutes);
   app.use('/purchases', purchaseRoutes);
 } catch (err) {
